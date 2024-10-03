@@ -1,0 +1,52 @@
+/* Sidebar.css */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    min-height: 100vh;
+  }
+  
+  .sidebar {
+    min-height: 100vh;
+    width: 70px;
+    background-color: #202225;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+  }
+  
+  .icon-container {
+    margin-bottom: 15px;
+    width: 70px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    background-color: #202225;
+    border-style: transparent;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .icon-container:hover {
+    border-left: solid 3px;
+    border-left-color: white;
+  }
+  
+  .server-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+  }
+  
+  .server-icon:hover {
+    width: 50px;
+    height: 50px;
+    border-radius: 30%;
+  }
+  
