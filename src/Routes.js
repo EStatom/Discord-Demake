@@ -1,9 +1,11 @@
 import React, {useState, useEffect} from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import Ayman from './pages/Ayman';
-import Landing from './pages/Landing';
+import Ayman from './pages/components/Ayman';
+import Landing from './pages/components/Landing';
 import Sidebar from './Sidebar';
 import Login from './pages/components/Login';
+import SignUp from './pages/components/SignUp';
+import ForgotPassword from './pages/components/ForgotPassword';
 import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -48,6 +50,9 @@ function App() {
                     <Route path="/" element={<Landing/>}/>
                     {/* Khans pages */}
                     <Route path='/Login' element={<Login />}/>
+                    <Route path='/SignUp' element={<SignUp/>}/>
+                    <Route path='/ForgotPassword' element={<ForgotPassword/>}/>
+                    
                 </Routes>
             </div>
         </div>

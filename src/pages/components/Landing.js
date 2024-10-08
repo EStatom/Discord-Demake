@@ -1,6 +1,6 @@
 import React from "react";
-import './Landing.css';
-import logo from './logo.svg';
+import './../styles/Landing.css';
+import logo from './../images/logo.svg';
 
 export default function Landing() {
     return(

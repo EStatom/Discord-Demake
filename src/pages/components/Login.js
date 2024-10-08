@@ -18,8 +18,8 @@ const Login = () => {
           <button type="submit">Sign In</button>
         </form>
         <div className="extra-options">
-          <button onClick={() => window.location.href = '/signup'}>Sign Up</button>
-          <button onClick={() => window.location.href = '/forgot-password'}>Forgot Password?</button>
+          <button onClick={() => window.location.href = '/Signup'}>Sign Up</button>
+          <button onClick={() => window.location.href = '/ForgotPassword'}>Forgot Password?</button>
         </div>
       </div>
     </div>
