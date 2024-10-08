@@ -3,6 +3,7 @@ import { Route, Routes, useNavigate } from 'react-router-dom';
 import Ayman from './pages/Ayman';
 import Landing from './pages/Landing';
 import Sidebar from './Sidebar';
+import Login from './pages/components/Login';
 import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -45,6 +46,8 @@ function App() {
                     <Route path="/server/:serverId" element={<Ayman serverDetails={serverDetails} />}/>
                     {/* Default Route */}
                     <Route path="/" element={<Landing/>}/>
+                    {/* Khans pages */}
+                    <Route path='/Login' element={<Login />}/>
                 </Routes>
             </div>
         </div>
