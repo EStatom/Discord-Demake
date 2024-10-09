@@ -6,6 +6,7 @@ import Sidebar from './Sidebar';
 import Login from './pages/components/Login';
 import SignUp from './pages/components/SignUp';
 import ForgotPassword from './pages/components/ForgotPassword';
+import TextPage from './pages/components/TextPage';
 import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -45,7 +46,7 @@ function App() {
             <div className="server-content">
                 <Routes>
                     {/* Route for displaying server details; ':serverId' tells the server this is a variable */}
-                    <Route path="/server/:serverId" element={<Ayman serverDetails={serverDetails} />}/>
+                    <Route path="/server/:serverId" element={<TextPage />}/>
                     {/* Default Route */}
                     <Route path="/" element={<Landing/>}/>
                     {/* Khans pages */}
