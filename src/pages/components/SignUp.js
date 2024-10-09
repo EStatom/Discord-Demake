@@ -4,6 +4,7 @@ import './../styles/SignUp.css'; // Import the CSS file for styling
 
 const SignUp = () => {
   return (
+    <div className="signup-page">
     <div className="signup-container">
       <h2>Sign Up</h2>
       <form>
@@ -18,6 +19,7 @@ const SignUp = () => {
 
         <button type="submit">Sign Up</button>
       </form>
+    </div>
     </div>
   );
 };

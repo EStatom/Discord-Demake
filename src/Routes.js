@@ -6,7 +6,7 @@ import Sidebar from './Sidebar';
 import Login from './pages/components/Login';
 import SignUp from './pages/components/SignUp';
 import ForgotPassword from './pages/components/ForgotPassword';
-import TextPage from './pages/components/TextPage';
+import ChatApp from './pages/components/ChatApp';
 import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 
@@ -41,17 +41,17 @@ function App() {
     };
 
   return (
-        <div style={{display: 'flex'}}>
+        <div style={{display: 'flex', width: '100dvw'}}>
             <Sidebar onSelectServer={handleSelectedServer} />
-            <div className="server-content">
+            <div className="server-content" style={{width: '100%'}}>
                 <Routes>
                     {/* Route for displaying server details; ':serverId' tells the server this is a variable */}
-                    <Route path="/server/:serverId" element={<TextPage />}/>
+                    <Route path="/server/:serverId" element={<ChatApp />}/>
                     {/* Default Route */}
                     <Route path="/" element={<Landing/>}/>
                     {/* Khans pages */}
                     <Route path='/Login' element={<Login />}/>
-                    <Route path='/SignUp' element={<SignUp/>}/>
+                    <Route path='/Signup' element={<SignUp/>}/>
                     <Route path='/ForgotPassword' element={<ForgotPassword/>}/>
                     
                 </Routes>

@@ -4,6 +4,7 @@ import './../styles/ForgotPassword.css'; // Import the CSS file for styling
 
 const ForgotPassword = () => {
   return (
+    <div className="forgot-password-page">
     <div className="forgot-password-container">
       <h2>Forgot Password</h2>
       <form>
@@ -12,6 +13,7 @@ const ForgotPassword = () => {
 
         <button type="submit">Reset Password</button>
       </form>
+    </div>
     </div>
   );
 };

@@ -9,7 +9,7 @@ const Sidebar = ({ onSelectServer }) => {
 
   // Styles in JSX format
 const sidebarStyles = {
-    minHeight: '100vh',
+    height: '100',
     width: '70px',
     backgroundColor: '#202225',
     display: 'flex',
