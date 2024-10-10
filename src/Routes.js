@@ -46,7 +46,7 @@ function App() {
             <div className="server-content" style={{width: '100%'}}>
                 <Routes>
                     {/* Route for displaying server details; ':serverId' tells the server this is a variable */}
-                    <Route path="/server/:serverId" element={<ChatApp />}/>
+                    <Route path="/server/:serverId" element={<ChatApp serverDetails={serverDetails}/>}/>
                     {/* Default Route */}
                     <Route path="/" element={<Landing/>}/>
                     {/* Khans pages */}

@@ -17,7 +17,7 @@ const ChatHeader = ({ name, serverId, type }) => {
       <div className="header-left">
         <Menu className="icon" />
         {type === "channel" && <Hash className="icon" />}
-        <span className="channel-name"># {name}</span>
+        <span className="channel-name">{name}</span>
       </div>
       <div className="header-search">
         <Search className="icon" />
@@ -29,7 +29,7 @@ const ChatHeader = ({ name, serverId, type }) => {
           className="search-input"
         />
       </div>
-      <div className="server-info">Server: {serverId}</div>
+      <div className="server-info">Server Description: {serverId}</div>
     </div>
   );
 };
@@ -117,10 +117,10 @@ const ChatInput = () => {
 };
 
 // Main Chat App Component
-const ChatApp = () => {
+const ChatApp = ({serverDetails}) => {
   return (
     <div className="chat-app">
-      <ChatHeader name="server name" serverId="123" type="channel" />
+      <ChatHeader name={serverDetails ? serverDetails.name : "Invalid Server Name"} serverId={serverDetails ? serverDetails.description : ""} type="channel" />
       <ChatMessages />
       <ChatInput />
     </div>
