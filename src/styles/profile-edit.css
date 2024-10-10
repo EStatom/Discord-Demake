@@ -1,0 +1,114 @@
+/* src/styles/profile-edit.css */
+
+body, html {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Arial', sans-serif;
+  background-color: #36393f; /* Discord's dark grey background */
+  color: #ffffff; /* White text */
+}
+
+.profile-edit-page {
+  max-width: 800px;
+  margin: 20px auto;
+  color: white;
+}
+
+.profile-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  background-color: #2f3136;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  height: 200px; /* Adjust the height as needed */
+  overflow: hidden;
+}
+
+.banner-image img {
+  width: 168%;
+  height: 200%;
+  object-fit: cover; /* Ensure the banner image covers the entire banner */
+  border-radius: 8px;
+}
+
+.profile-avatar {
+  position: absolute;
+  bottom: -50px; /* Keeps the profile avatar overlapping the banner */
+  left: 20px;
+}
+
+.profile-avatar img {
+  border-radius: 50%;
+  width: 100px;
+  height: 100px;
+  border: 3px solid #2f3136; /* Adds a border to separate from the banner */
+}
+
+.profile-details {
+  margin-left: 150px; /* Adds space between avatar and details */
+}
+
+.profile-details h3 {
+  margin: 0;
+}
+
+.edit-profile-btn {
+  background-color: #7289da;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.profile-edit-section {
+  background-color: #2f3136;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.profile-edit-section label {
+  display: block;
+  margin-bottom: 5px;
+  color: white;
+}
+
+.profile-edit-section input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #40444b;
+  color: white;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 10px; /* Ensure spacing between buttons */
+}
+
+.save-btn {
+  background-color: #43b581;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #f04747;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background-color: #ff6161;
+}
