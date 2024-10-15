@@ -15,7 +15,7 @@ const Login = () => {
           <label htmlFor="password">Password</label>
           <input type="password" id="password" name="password" required />
 
-          <button type="submit">Sign In</button>
+          <button onClick={() => window.location.href = '/Landing'}>Sign In</button>
         </form>
         <div className="extra-options">
           <button onClick={() => window.location.href = '/Signup'}>Sign Up</button>

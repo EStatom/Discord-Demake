@@ -40,14 +40,14 @@ const ProfileEdit = ({ profileData, onProfileChange }) => {
   const handleSave = () => {
     onProfileChange(localProfileData);  // Save changes to parent
     alert('Changes saved!');
-    navigate('/account-info');  // Go back to AccountInfo after saving
+    navigate('/AccountInfo');  // Go back to AccountInfo after saving
   };
 
   // Handle cancel and go back without saving
   const handleCancel = () => {
     const confirmCancel = window.confirm('Are you sure you want to cancel your changes?');
     if (confirmCancel) {
-      navigate('/account-info'); // Go back to AccountInfo without saving
+      navigate('/AccountInfo'); // Go back to AccountInfo without saving
     }
   };
 
