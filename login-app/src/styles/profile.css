@@ -1,0 +1,117 @@
+body, html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #36393f; /* Discord dark background */
+    color: #ffffff;
+  }
+  
+  .profile-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+  }
+  
+  .profile-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    max-width: 1000px;
+    background-color: #2f3136;
+    padding: 20px;
+    border-radius: 8px;
+  }
+  
+  .profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin-right: 20px;
+  }
+  
+  .profile-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .profile-details h3 {
+    margin: 0;
+    font-size: 24px;
+    color: #ffffff;
+  }
+  
+  .profile-details p {
+    margin: 5px 0 0 0;
+    font-size: 16px;
+    color: #b9bbbe;
+  }
+  
+  .search-bar {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    max-width: 1000px;
+  }
+  
+  .search-bar input {
+    width: 100%;
+    max-width: 800px;
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #202225;
+    color: white;
+  }
+  
+  .search-bar input:focus {
+    outline: none;
+    border: 1px solid #7289da;
+  }
+  
+  .friend-list {
+    margin-top: 40px;
+    width: 100%;
+    max-width: 1000px;
+  }
+  
+  .friend-list h2 {
+    margin-bottom: 20px;
+    color: #ffffff;
+    text-align: center;
+  }
+  
+  .friend {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #2f3136;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+  }
+  
+  .friend p {
+    color: #ffffff;
+  }
+  
+  .friend .friend-status {
+    color: #43b581; /* Online status */
+  }
+  
+  .friend button {
+    background-color: #7289da;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .friend button:hover {
+    background-color: #5865f2;
+  }
+  
