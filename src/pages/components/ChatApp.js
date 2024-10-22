@@ -14,6 +14,7 @@ const ChatHeader = ({ name, serverId, type }) => {
 
   return (
     <div className="chat-header">
+<<<<<<< Updated upstream
       <div className="header-left">
         <Menu className="icon" />
         {type === "channel" && <Hash className="icon" />}
@@ -21,15 +22,51 @@ const ChatHeader = ({ name, serverId, type }) => {
       </div>
       <div className="header-search">
         <Search className="icon" />
+=======
+      {/*className="flex items-center justify-between": This applies CSS classes from Tailwind CSS. It makes the content inside the div flexible (arranged in a row), aligns the items vertically in the center (items-center), and spaces them out evenly (justify-between)*/}
+      {/*p-4: Adds padding around the content*/}
+      {/*bg-gray-900 text-white: The background color is dark gray, and the text color is white.*/}
+      {/*border-b border-gray-700: Adds a bottom border in a slightly lighter gray.*/}
+      <div className="header-left">
+        <Menu className="w-5 h-5" />
+                 {/*<Menu className="w-5 h-5" />: This renders a menu icon with width and height of 5 units. This could represent options/settings.*/}
+
+        {type === "channel" && <Hash className="w-5 h-5" />}
+                   {/*type === "channel" && (<Hash className="w-5 h-5" />)}: This checks if the type prop is "channel". If it is, it displays a # icon (common for channels).*/}
+        <span className="font-semibold"># {name}</span>
+                {/*This displays the name of the channel or direct message */}
+
+      </div>
+      <div className="header-search">
+        <Search className="search-icon" />
+        {/*bg-gray-700: Sets a darker gray background for the search bar.*/}
+               {/*rounded-lg: Adds rounded corners to the search bar.*/}
+               {/* p-2: Adds padding around the search bar content.*/}
+               {/*space-x-2: Adds space between the search icon and the input field.*/}
+               {/*w-[40%]: Sets the width of the search bar to 40% of the available space in the header*/}
+>>>>>>> Stashed changes
         <input
           type="text"
           placeholder="Search..."
           value={searchTerm}
           onChange={handleSearch}
+<<<<<<< Updated upstream
           className="search-input"
         />
       </div>
       <div className="server-info">Server Description: {serverId}</div>
+=======
+                    //onChange={handleSearch}: Whenever the user types something, the handleSearch function is called to update the searchTerm value.
+
+          className="search-input"
+        />
+      </div>
+                  {/*className="bg-transparent text-white border-none outline-none w-full": This removes the background and borders for the input, makes the text white, and ensures the input field takes up the full width (w-full)*/}
+
+      <div className="server-info">
+        Server: {serverId}
+      </div>
+>>>>>>> Stashed changes
     </div>
   );
 };
@@ -44,6 +81,7 @@ const ChatMessages = () => {
 
   return (
     <div className="chat-messages">
+<<<<<<< Updated upstream
       {messages.map((msg, index) => (
         <Message
           key={index}
@@ -52,6 +90,21 @@ const ChatMessages = () => {
           timestamp={msg.timestamp}
         />
       ))}
+=======
+      {messages
+        .filter((msg) => msg.content.toLowerCase().includes(searchTerm.toLowerCase())) // Filter based on search term
+        .map((msg, index) => (
+          <Message
+            key={index}
+            sender={msg.sender}
+            content={highlightText(msg.content, searchTerm)} // Highlight the search term
+            timestamp={msg.timestamp}
+            fileURL={msg.fileURL} // Pass fileURL if available
+            onDelete={() => handleDeleteMessage(msg.id)} // Handle message delete
+            onEdit={() => handleEditMessage(msg.id, msg.content)} // Handle message edit
+          />
+        ))}
+>>>>>>> Stashed changes
     </div>
   );
 };
@@ -60,9 +113,22 @@ const ChatMessages = () => {
 const Message = ({ sender, content, timestamp }) => {
   return (
     <div className="message">
+<<<<<<< Updated upstream
       <strong>{sender}</strong>
       <p>{content}</p>
       <span>{timestamp}</span>
+=======
+      <div className="message">
+        <p className="message-sender">{sender}</p>
+        <p>{content}</p>
+        {fileURL && <a href={fileURL} target="_blank" rel="noopener noreferrer" className="text-blue-400">Download File</a>}
+        <span className="message-timestamp">{timestamp}</span>
+        <div className="flex space-x-2 mt-2">
+          <button onClick={onDelete} className="text-red-500">Delete</button>
+          <button onClick={onEdit} className="text-blue-500">Edit</button>
+        </div>
+      </div>
+>>>>>>> Stashed changes
     </div>
   );
 };
@@ -101,10 +167,21 @@ const ChatInput = () => {
           className="input-field"
         />
         <button className="emoji-btn" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
+<<<<<<< Updated upstream
           <Smile className="icon" />
         </button>
         <button className="send-btn" onClick={sendMessage}>
           <Send className="icon" />
+=======
+          <Smile className="emoji-icon" />
+        </button>
+        <label className="p-1 text-white cursor-pointer">
+          <Plus className="plus-icon" />
+          <input type="file" onChange={handleFileChange} className="hidden" />
+        </label>
+        <button className="send-btn" onClick={sendMessage}>
+          <Send className="send-icon" />
+>>>>>>> Stashed changes
         </button>
       </div>
       {showEmojiPicker && (
@@ -120,9 +197,22 @@ const ChatInput = () => {
 const ChatApp = ({serverDetails}) => {
   return (
     <div className="chat-app">
+<<<<<<< Updated upstream
       <ChatHeader name={serverDetails ? serverDetails.name : "Invalid Server Name"} serverId={serverDetails ? serverDetails.description : ""} type="channel" />
       <ChatMessages />
       <ChatInput />
+=======
+      <ChatHeader 
+        name={serverDetails ? serverDetails.name : "Invalid Server Name"}
+        serverId={serverDetails ? serverDetails.description : ""}
+        type="channel"
+        onSearch={handleSearch}  // Pass the handleSearch function here
+      />
+      <ChatMessages searchTerm={searchTerm} />
+      <div className="chat-input">
+        <ChatInput />
+      </div>
+>>>>>>> Stashed changes
     </div>
   );
 };
