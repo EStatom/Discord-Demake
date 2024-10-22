@@ -1,44 +1,197 @@
-/* ChannelList.css */
 .channel-list-container {
-    width: 200px;  /* Adjust the width as needed */
-    background-color: #2F3136;
-    color: #fff;
-    padding: 20px;
-    box-sizing: border-box;
-    border-right: 1px solid #40444b;
+    width: 18vw;  
+    max-width: 250px; 
+    min-width: 180px;  
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    color: #ffffff;
+    background-color: #2f3136;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
 }
+
 
 .server-header {
+    background-color: #23272a; 
+    color: white;
+    font-size: 1.2rem;
+    font-weight: bold;
+    padding: 20px 15px;  
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    justify-content: space-between;
+    border-bottom: 1px solid #2c2f33;  
+    box-sizing: border-box;
+    position: relative;
 }
 
-.server-header h2 {
-    font-size: 16px;
-    margin: 0;
-}
-
-.settings-icon {
+.server-header .settings-icon {
     cursor: pointer;
-    color: #fff;
-    width: 20px;
-    height: 20px;
+    color: #b9bbbe;
+    transition: color 0.2s;
 }
 
+.server-header .settings-icon:hover {
+    color: white;  
+}
+
+/* Channel List */
 ul {
     list-style-type: none;
     padding: 0;
+    margin: 0;
+    width: 100%; 
 }
 
+/* Channel Items */
 li {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem; 
+    color: #b9bbbe;
     cursor: pointer;
-    padding: 10px;
-    font-size: 14px;
-    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s ease;
 }
 
 li:hover {
-    background-color: #40444b;
+    background-color: #393c43;
+    color: #ffffff;
+}
+
+.delete-channel-button {
+    background: none;
+    border: none;
+    color: #ff5e5e;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 10px;
+}
+
+.delete-channel-button:hover {
+    color: #ff3b3b;
+}
+
+.add-channel-button {
+    background: none;
+    border: none;
+    color: #7289da;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;  
+    transition: color 0.2s ease;
+}
+
+.add-channel-button:hover {
+    color: #4e5d94;
+}
+
+.new-channel-form {
+    display: flex;
+    flex-direction: row;
+    margin-top: 1rem;
+}
+
+.new-channel-form input {
+    flex: 1;
+    padding: 0.5rem;
+    background-color: #202225;
+    color: white;
+    border: 1px solid #4f545c;
+    border-radius: 3px;
+    width: 100%;
+    box-sizing: border-box;  
+}
+
+.new-channel-form button {
+    background-color: #7289da;
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    margin-left: 0.5rem;
+}
+
+.new-channel-form button:hover {
+    background-color: #5b6ea8;
+}
+
+.user-profile-section {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #292b2f; 
+    padding: 10px;
+    border-top: 1px solid #2f3136; 
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;  
+    box-sizing: border-box;  
+    max-width: 100%;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    color: white;
+}
+
+.username {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.user-id {
+    font-size: 0.8rem;
+    color: #b9bbbe;  
+}
+
+.user-settings-icon {
+    color: #b9bbbe;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.user-settings-icon:hover {
+    color: white;  
+}
+
+.active-channel {
+    background-color: #3f4147;  
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.active-channel:hover {
+    background-color: #4f5157;  
+}
+
+.channel-item {
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.2s ease;
+}
+
+.channel-item:hover {
+    background-color: #393c43;
 }
