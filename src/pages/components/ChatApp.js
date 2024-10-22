@@ -1,28 +1,27 @@
 import React, { useState } from 'react';
+import { useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
-import { Menu, Hash, Search, Smile, Send } from 'lucide-react';
+import { listenForMessages, editMessageInFirebase, deleteMessageFromFirebase } from '../../firebase';
+import { sendMessageToFirebase, uploadFileToFirebase } from '../../firebase';
+
+import { Menu, Hash, Search, Smile, Plus, Send } from 'lucide-react';
 import './../styles/ChatApp.css';
 
 // Chat Header Component
-const ChatHeader = ({ name, serverId, type }) => {
+const ChatHeader = ({ name, serverId, type, onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
-
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    console.log('Searching for:', e.target.value);
+// searchTerm: it is to store what the user has typed into the search bar.
+// setSearchTerm: This is a function that updates searchTerm. Whenever the user types something new, setSearchTerm will update it.
+  const handleSearch = (e) => { // Whenever the user types in the search box, it will update.
+    const value = e.target.value; // this part is updating the search term (the text in the search box) with whatever the user types.
+    setSearchTerm(value);   
+    if (onSearch) {
+      onSearch(value);  // Ensure onSearch is called correctly
+    }    
   };
 
   return (
     <div className="chat-header">
-<<<<<<< Updated upstream
-      <div className="header-left">
-        <Menu className="icon" />
-        {type === "channel" && <Hash className="icon" />}
-        <span className="channel-name">{name}</span>
-      </div>
-      <div className="header-search">
-        <Search className="icon" />
-=======
       {/*className="flex items-center justify-between": This applies CSS classes from Tailwind CSS. It makes the content inside the div flexible (arranged in a row), aligns the items vertically in the center (items-center), and spaces them out evenly (justify-between)*/}
       {/*p-4: Adds padding around the content*/}
       {/*bg-gray-900 text-white: The background color is dark gray, and the text color is white.*/}
@@ -44,18 +43,11 @@ const ChatHeader = ({ name, serverId, type }) => {
                {/* p-2: Adds padding around the search bar content.*/}
                {/*space-x-2: Adds space between the search icon and the input field.*/}
                {/*w-[40%]: Sets the width of the search bar to 40% of the available space in the header*/}
->>>>>>> Stashed changes
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="Search..."  //placeholder="Search...": This is the placeholder text that appears when the input is empty.
           value={searchTerm}
           onChange={handleSearch}
-<<<<<<< Updated upstream
-          className="search-input"
-        />
-      </div>
-      <div className="server-info">Server Description: {serverId}</div>
-=======
                     //onChange={handleSearch}: Whenever the user types something, the handleSearch function is called to update the searchTerm value.
 
           className="search-input"
@@ -66,31 +58,52 @@ const ChatHeader = ({ name, serverId, type }) => {
       <div className="server-info">
         Server: {serverId}
       </div>
->>>>>>> Stashed changes
     </div>
   );
 };
 
 // Chat Messages Component
-const ChatMessages = () => {
-  const messages = [
-    { sender: 'User1', content: 'Hello!', timestamp: '10:45 AM' },
-    { sender: 'User2', content: 'Hi there!', timestamp: '10:46 AM' },
-    { sender: 'User1', content: 'How are you?', timestamp: '10:47 AM' },
-  ];
+const ChatMessages = ({ searchTerm }) => {
+  const [messages, setMessages] = useState([]);
+  
+
+
+  useEffect(() => {
+    const unsubscribe = listenForMessages((newMessages) => {
+      console.log('New messages received:', newMessages); // Log new messages
+      setMessages(newMessages);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleEditMessage = (id, content) => {
+    const newContent = prompt('Edit your message:', content); // Prompt to edit the message
+    if (newContent !== null && newContent.trim() !== "") {
+      editMessageInFirebase(id, newContent);  // Update the message in Firebase
+    }
+  };
+
+  const handleDeleteMessage = (id) => {
+    if (window.confirm('Are you sure you want to delete this message?')) {
+      deleteMessageFromFirebase(id);
+    }
+  };
+
+  const highlightText = (text, highlight) => {
+    if (!highlight.trim()) {
+      return text;
+    }
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+
+    return parts.map((part, index) =>
+      part.toLowerCase() === highlight.toLowerCase() ? 
+      <span key={index} style={{ backgroundColor: 'yellow' }}>{part}</span> : 
+      part
+    );
+  };
 
   return (
     <div className="chat-messages">
-<<<<<<< Updated upstream
-      {messages.map((msg, index) => (
-        <Message
-          key={index}
-          sender={msg.sender}
-          content={msg.content}
-          timestamp={msg.timestamp}
-        />
-      ))}
-=======
       {messages
         .filter((msg) => msg.content.toLowerCase().includes(searchTerm.toLowerCase())) // Filter based on search term
         .map((msg, index) => (
@@ -104,20 +117,15 @@ const ChatMessages = () => {
             onEdit={() => handleEditMessage(msg.id, msg.content)} // Handle message edit
           />
         ))}
->>>>>>> Stashed changes
     </div>
   );
 };
 
+
 // Individual Message Component
-const Message = ({ sender, content, timestamp }) => {
+const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
   return (
     <div className="message">
-<<<<<<< Updated upstream
-      <strong>{sender}</strong>
-      <p>{content}</p>
-      <span>{timestamp}</span>
-=======
       <div className="message">
         <p className="message-sender">{sender}</p>
         <p>{content}</p>
@@ -128,7 +136,6 @@ const Message = ({ sender, content, timestamp }) => {
           <button onClick={onEdit} className="text-blue-500">Edit</button>
         </div>
       </div>
->>>>>>> Stashed changes
     </div>
   );
 };
@@ -137,11 +144,23 @@ const Message = ({ sender, content, timestamp }) => {
 const ChatInput = () => {
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [file, setFile] = useState(null);
 
-  const sendMessage = () => {
-    if (message.trim() !== '') {
-      console.log('Message sent:', message);
-      setMessage('');
+  const sendMessage = async () => {
+    let fileURL = null;
+
+    if (file) {
+      console.log('Uploading file:', file.name); // Debugging log for file upload
+      fileURL = await uploadFileToFirebase(file); // Upload the file to Firebase
+      console.log('File uploaded, URL:', fileURL); // Log the uploaded file URL
+      setFile(null); // Clear the file after upload
+    }
+
+    if (message.trim() !== '' || fileURL) {
+      console.log('Sending message with content:', message); // Debugging log for message content
+      console.log('Sending file URL:', fileURL); // Debugging log for file URL
+      await sendMessageToFirebase(message, fileURL); // Send message and fileURL to Firebase
+      setMessage(''); // Clear message after sending
     }
   };
 
@@ -152,7 +171,13 @@ const ChatInput = () => {
   };
 
   const onEmojiClick = (emojiObject) => {
-    setMessage((prevMessage) => prevMessage + emojiObject.emoji);
+    setMessage((prevMessage) => prevMessage + emojiObject.emoji); // Add emoji to message
+    console.log('Emoji added to message:', emojiObject.emoji); // Log the emoji added
+  };
+
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]); // Store selected file
+    console.log('File selected:', e.target.files[0]); // Log selected file
   };
 
   return (
@@ -161,18 +186,12 @@ const ChatInput = () => {
         <input
           type="text"
           placeholder="Type your message here..."
+          className="w-full bg-transparent text-white border-none outline-none"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyPress}
-          className="input-field"
         />
         <button className="emoji-btn" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
-<<<<<<< Updated upstream
-          <Smile className="icon" />
-        </button>
-        <button className="send-btn" onClick={sendMessage}>
-          <Send className="icon" />
-=======
           <Smile className="emoji-icon" />
         </button>
         <label className="p-1 text-white cursor-pointer">
@@ -181,7 +200,6 @@ const ChatInput = () => {
         </label>
         <button className="send-btn" onClick={sendMessage}>
           <Send className="send-icon" />
->>>>>>> Stashed changes
         </button>
       </div>
       {showEmojiPicker && (
@@ -194,14 +212,17 @@ const ChatInput = () => {
 };
 
 // Main Chat App Component
-const ChatApp = ({serverDetails}) => {
+const ChatApp = ({ serverDetails }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Function to handle search input
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+    console.log("Search term:", term); // Debugging log
+  };
+
   return (
     <div className="chat-app">
-<<<<<<< Updated upstream
-      <ChatHeader name={serverDetails ? serverDetails.name : "Invalid Server Name"} serverId={serverDetails ? serverDetails.description : ""} type="channel" />
-      <ChatMessages />
-      <ChatInput />
-=======
       <ChatHeader 
         name={serverDetails ? serverDetails.name : "Invalid Server Name"}
         serverId={serverDetails ? serverDetails.description : ""}
@@ -212,9 +233,9 @@ const ChatApp = ({serverDetails}) => {
       <div className="chat-input">
         <ChatInput />
       </div>
->>>>>>> Stashed changes
     </div>
   );
 };
+
 
 export default ChatApp;
