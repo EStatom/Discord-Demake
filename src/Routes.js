@@ -1,8 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import Ayman from './pages/components/Ayman';
 import Landing from './pages/components/Landing';
 import Sidebar from './Sidebar';
+import ChannelList from './pages/components/ChannelList';
 import Login from './pages/components/Login';
 import SignUp from './pages/components/SignUp';
 import ForgotPassword from './pages/components/ForgotPassword';
@@ -17,6 +17,7 @@ import profileImage from './pages/images/profile-1.jpeg';
 
 function App() {
     const [serverDetails, setServerDetails] = useState(null);
+    const [selectedChannel, setSelectedChannel] = useState('general');
 
     const [profileData, setProfileData] = useState({
         displayName: 'Khan Mahmud',
@@ -59,12 +60,15 @@ function App() {
             const serverSnapshot = await getDoc(serverDoc);
             // Let's make sure it actually pulled information
             if (serverSnapshot.exists()) {
-                //Setting of State
-                setServerDetails(serverSnapshot.data());
+                setServerDetails({
+                    id: serverId,  // Ensure serverId is set properly
+                    ...serverSnapshot.data()  // Spread the server data
+                });
             } else {
                 // No info, that means something is wrong
                 console.error('NO SUCH SERVER!');
                 setServerDetails(null); // Clear the server details if the server does not exist
+                setSelectedChannel(null);
             }
         }
     };
@@ -75,27 +79,37 @@ function App() {
         fetchServerDetails(serverId);
     };
 
+    const handleSelectedChannel = (serverId, channelId) => {
+        setSelectedChannel(channelId); 
+        navigate(`/server/${serverId}/channel/${channelId}`);
+    }
+
     
 
-  return (
-        <div style={{display: 'flex', width: '100dvw'}}>
+    return (
+        <div style={{ display: 'flex', flexDirection: 'row', width: '100vw', height: '100vh' }}>
+            {/* Sidebar on the left */}
             <Sidebar onSelectServer={handleSelectedServer} />
-            <div className="server-content" style={{width: '100%', minHeight: '100dvh'}}>
-                <Routes>
-                    {/* Route for displaying server details; ':serverId' tells the server this is a variable */}
-                    <Route path="/server/:serverId" element={<ChatApp serverDetails={serverDetails}/>}/>
-                    {/* Default Route */}
-                    <Route path="/" element={<Landing/>}/>
-                    {/* Khans pages */}
-                    <Route path='/Login' element={<Login />}/>
-                    <Route path='/Signup' element={<SignUp/>}/>
-                    <Route path='/ForgotPassword' element={<ForgotPassword/>}/>
-                    
-                    <Route path='/AccountInfo' element={<AccountInfo profileData={profileData} />}/>
-                    <Route path='/ProfileEdit' element={<ProfileEdit profileData={profileData} onProfileChange={handleProfileChange} />}/>
 
-                </Routes>
-            </div>
+            {/* Channel list in the middle */}
+            {serverDetails && (
+                <ChannelList serverDetails={serverDetails} onSelectChannel={handleSelectedChannel} />
+            )}
+
+            {/* Chat on the right */}
+            {selectedChannel && serverDetails && (
+                <ChatApp serverDetails={serverDetails} selectedChannel={selectedChannel} />
+            )}
+
+            {/* Routes for other pages */}
+            <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/Login" element={<Login />} />
+                <Route path="/Signup" element={<SignUp />} />
+                <Route path="/ForgotPassword" element={<ForgotPassword />} />
+                <Route path="/AccountInfo" element={<AccountInfo />} />
+                <Route path="/ProfileEdit" element={<ProfileEdit />} />
+            </Routes>
         </div>
     );
 }
