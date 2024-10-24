@@ -1,6 +1,6 @@
 // src/components/AccountInfo.js
 import React, { useEffect, useState } from 'react';
-import { auth, db } from './firebase'; // Ensure Firebase is properly configured
+import { auth, db } from './../../firebase'; // Ensure Firebase is properly configured
 import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';

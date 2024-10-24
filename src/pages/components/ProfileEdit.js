@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { auth, db } from './firebase'; // Firebase import
+import { auth, db } from './../../firebase'; // Firebase import
 import { doc, setDoc } from 'firebase/firestore';
 import './../styles/profile-edit.css';
 

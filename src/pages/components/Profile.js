@@ -1,6 +1,6 @@
 // src/components/Profile.js
 import React, { useEffect, useState } from 'react';
-import { auth, db } from './firebase'; // Firebase config
+import { auth, db } from './../../firebase'; // Firebase config
 import { doc, getDoc, collection, query, where, getDocs, setDoc } from 'firebase/firestore'; // Ensure setDoc is imported
 import { useNavigate } from 'react-router-dom';
 import './../styles/profile.css';

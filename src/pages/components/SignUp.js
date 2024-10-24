@@ -1,7 +1,7 @@
 // src/components/SignUp.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate
-import { auth, db } from './firebase';
+import { auth, db } from './../../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore'; // Import additional Firestore functions
 import './../styles/SignUp.css';

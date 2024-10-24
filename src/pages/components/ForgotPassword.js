@@ -1,7 +1,7 @@
 // src/components/ForgotPassword.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirection
-import { auth } from './firebase'; // Import the Firebase auth instance
+import { auth } from './../../firebase'; // Import the Firebase auth instance
 import { sendPasswordResetEmail } from 'firebase/auth';
 import './../styles/ForgotPassword.css'; // Import the CSS file for styling
 
