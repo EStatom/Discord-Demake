@@ -66,25 +66,62 @@ margin-left: auto;
 
 /* Chat Messages */
 .chat-messages {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
+  background-color: #2f3136; /* Discord-like dark background */
+  padding: 20px;
+  height: calc(100vh - 100px); /* Adjust for your layout */
+  overflow-y: auto; /* Allow scrolling if messages exceed the container height */
 }
 
-
-
-.message strong {
+.message-item {
+  display: flex;
+  flex-direction: column;
+  background-color: #36393f;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
   color: white;
 }
 
-.message p {
-  color: white;
-  margin: 4px 0;
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #b9bbbe;
 }
 
-.message span {
-  color: #a0aec0;
-  font-size: 12px;
+.message-sender {
+  font-weight: bold;
+  color: #fff; /* Make the sender's name more visible */
+}
+
+.message-timestamp {
+  font-size: 0.75rem;
+  color: #72767d;
+}
+
+.message-content p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #dcddde;
+}
+
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 5px;
+}
+
+.message-actions button {
+  background: none;
+  border: none;
+  color: #b9bbbe;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.message-actions button:hover {
+  color: #fff;
 }
 
 /* Chat Input */

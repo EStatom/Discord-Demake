@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
-import { listenForMessages, editMessageInFirebase, deleteMessageFromFirebase } from '../../firebase';
-import { sendMessageToFirebase, uploadFileToFirebase } from '../../firebase';
+import { collection, query, orderBy, onSnapshot, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { sendMessageToFirebase, uploadFileToFirebase } from './../../firebaseService';
+import { db } from '../../firebase';
 
 import { Menu, Hash, Search, Smile, Plus, Send } from 'lucide-react';
 import './../styles/ChatApp.css';
@@ -63,64 +64,28 @@ const ChatHeader = ({ name, serverId, type, onSearch }) => {
 };
 
 // Chat Messages Component
-const ChatMessages = ({ searchTerm }) => {
-  const [messages, setMessages] = useState([]);
-  
-
-
-  useEffect(() => {
-    const unsubscribe = listenForMessages((newMessages) => {
-      console.log('New messages received:', newMessages); // Log new messages
-      setMessages(newMessages);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  const handleEditMessage = (id, content) => {
-    const newContent = prompt('Edit your message:', content); // Prompt to edit the message
-    if (newContent !== null && newContent.trim() !== "") {
-      editMessageInFirebase(id, newContent);  // Update the message in Firebase
-    }
-  };
-
-  const handleDeleteMessage = (id) => {
-    if (window.confirm('Are you sure you want to delete this message?')) {
-      deleteMessageFromFirebase(id);
-    }
-  };
-
-  const highlightText = (text, highlight) => {
-    if (!highlight.trim()) {
-      return text;
-    }
-    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
-
-    return parts.map((part, index) =>
-      part.toLowerCase() === highlight.toLowerCase() ? 
-      <span key={index} style={{ backgroundColor: 'yellow' }}>{part}</span> : 
-      part
-    );
-  };
-
+const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage }) => {
   return (
     <div className="chat-messages">
-      {messages
-        .filter((msg) => msg.content.toLowerCase().includes(searchTerm.toLowerCase())) // Filter based on search term
-        .map((msg, index) => (
-          <Message
-            key={index}
-            sender={msg.sender}
-            content={highlightText(msg.content, searchTerm)} // Highlight the search term
-            timestamp={msg.timestamp}
-            fileURL={msg.fileURL} // Pass fileURL if available
-            onDelete={() => handleDeleteMessage(msg.id)} // Handle message delete
-            onEdit={() => handleEditMessage(msg.id, msg.content)} // Handle message edit
-          />
-        ))}
+      {messages.map((message) => (
+        <div key={message.id} className="message-item">
+          <div className="message-header">
+            <span className="message-sender">{message.sender}</span>
+            <span className="message-timestamp">{new Date(message.timestamp).toLocaleTimeString()}</span>
+          </div>
+          <div className="message-content">
+            <p>{message.content}</p>
+            {message.fileURL && <a href={message.fileURL} target="_blank" rel="noopener noreferrer">View File</a>}
+          </div>
+          <div className="message-actions">
+            <button onClick={() => onEditMessage(message.id, prompt('Edit message:', message.content))}>Edit</button>
+            <button onClick={() => onDeleteMessage(message.id)}>Delete</button>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };
-
 
 // Individual Message Component
 const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
@@ -141,11 +106,11 @@ const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
 };
 
 // Chat Input Component
-const ChatInput = () => {
+const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
   const [message, setMessage] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [file, setFile] = useState(null);
-
+  
   const sendMessage = async () => {
     let fileURL = null;
 
@@ -158,8 +123,8 @@ const ChatInput = () => {
 
     if (message.trim() !== '' || fileURL) {
       console.log('Sending message with content:', message); // Debugging log for message content
-      console.log('Sending file URL:', fileURL); // Debugging log for file URL
-      await sendMessageToFirebase(message, fileURL); // Send message and fileURL to Firebase
+      console.log('Sending file URL:', fileURL, selectedServerId, selectedChannelId); // Debugging log for file URL
+      await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username); // Send message and fileURL to Firebase
       setMessage(''); // Clear message after sending
     }
   };
@@ -212,13 +177,47 @@ const ChatInput = () => {
 };
 
 // Main Chat App Component
-const ChatApp = ({ serverDetails }) => {
+const ChatApp = ({ serverDetails, selectedChannelId, username }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    if (selectedChannelId) {
+      const q = query(
+        collection(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`), 
+        orderBy('timestamp', 'asc')
+      );
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const channelMessages = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setMessages(channelMessages);  
+      });
+
+      
+      return () => unsubscribe();
+    }
+  }, [serverDetails, selectedChannelId]);
+
+  const editMessage = async (messageId, newContent) => {
+    const messageDocRef = doc(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`, messageId);
+    await updateDoc(messageDocRef, { content: newContent });
+    console.log(`Message ${messageId} edited successfully`);
+  };
+
+  // Function to delete a message
+  const deleteMessage = async (messageId) => {
+    const messageDocRef = doc(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`, messageId);
+    await deleteDoc(messageDocRef);
+    console.log(`Message ${messageId} deleted successfully`);
+  };
 
   // Function to handle search input
   const handleSearch = (term) => {
     setSearchTerm(term);
-    console.log("Search term:", term); // Debugging log
+    console.log("Search term:", term);
   };
 
   return (
@@ -227,11 +226,20 @@ const ChatApp = ({ serverDetails }) => {
         name={serverDetails ? serverDetails.name : "Invalid Server Name"}
         serverId={serverDetails ? serverDetails.description : ""}
         type="channel"
-        onSearch={handleSearch}  // Pass the handleSearch function here
+        onSearch={handleSearch}
       />
-      <ChatMessages searchTerm={searchTerm} />
+      <ChatMessages 
+        messages={messages} 
+        searchTerm={searchTerm} 
+        onEditMessage={editMessage}   // Pass the edit handler
+        onDeleteMessage={deleteMessage}  // Pass the delete handler
+      />
       <div className="chat-input">
-        <ChatInput />
+        <ChatInput 
+          selectedServerId={serverDetails ? serverDetails.id : null} 
+          selectedChannelId={selectedChannelId} 
+          username={username}
+        />
       </div>
     </div>
   );
