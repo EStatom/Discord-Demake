@@ -1,111 +1,218 @@
 /* ChatApp Container */
 .chat-app {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    background-color: #79899e;
-    width: 100%;
-  }
-  
-  /* Chat Header */
-  .chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 16px;
-    background-color: #1f2937;
-    color: white;
-    border-bottom: 1px solid #374151;
-  }
-  
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .header-search {
-    display: flex;
-    align-items: center;
-    background-color: #374151;
-    border-radius: 8px;
-    padding: 8px;
-    width: 40%;
-  }
-  
-  .search-input {
-    background-color: transparent;
-    color: white;
-    border: none;
-    outline: none;
-    width: 100%;
-  }
-  
-  .server-info {
-    background-color: #2d3748;
-    padding: 4px 8px;
-    border-radius: 8px;
-    color: #a0aec0;
-  }
-  
-  /* Chat Messages */
-  .chat-messages {
-    flex: 1;
-    padding: 16px;
-    overflow-y: auto;
-  }
-  
-  .message {
-    margin-bottom: 12px;
-  }
-  
-  .message strong {
-    color: white;
-  }
-  
-  .message p {
-    color: white;
-    margin: 4px 0;
-  }
-  
-  .message span {
-    color: #a0aec0;
-    font-size: 12px;
-  }
-  
-  /* Chat Input */
-  .chat-input {
-    background-color: #1f2937;
-    border-top: 1px solid #374151;
-    padding: 16px;
-  }
-  
-  .input-container {
-    display: flex;
-    align-items: center;
-    background-color: #374151;
-    padding: 8px;
-    border-radius: 8px;
-  }
-  
-  .input-field {
-    flex: 1;
-    background-color: transparent;
-    color: white;
-    border: none;
-    outline: none;
-  }
-  
-  .emoji-btn, .send-btn {
-    background-color: transparent;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .emoji-picker {
-    position: absolute;
-    bottom: 56px;
-    right: 0;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #79899e;
+  width: 100%;
+}
+
+/* Chat Header */
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background-color: #1f2937;
+  color: white;
+  border-bottom: 1px solid #374151;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-search {
+  display: flex;
+  align-items: center;
+  background-color: #374151;
+  border-radius: 8px;
+  padding: 4px 8px; /* Adjusted padding to balance search icon and input */
+  width: 40%; /* Make the search bar span the available width */
+  max-width: 600px; /* Optional max width to limit the search bar size */
+  margin-left: auto; /* Push the search bar to the right */
+}
+
+.search-input {
+  flex: 1;
+  background-color: #4b5563; /* Give the input its own distinct background */
+  color: #e5e7eb;
+  border: none;
+  outline: none;
+  padding: 8px 12px; /* Add padding for better text input appearance */
+  border-radius: 8px;
+}
+
+/* Search Icon */
+.search-icon {
+color: #e5e7eb; /* Lighter color for the search icon */
+margin-right: 8px; /* Add spacing between icon and input */
+}
+
+/* Placeholder Styling */
+::placeholder {
+color: #9ca3af; /* Slightly lighter color for placeholder */
+}
+
+.server-info {
+background-color: #2d3748;
+padding: 4px 8px;
+border-radius: 8px;
+color: #a0aec0;
+margin-left: auto;
+}
+
+/* Chat Messages */
+.chat-messages {
+  background-color: #2f3136; /* Discord-like dark background */
+  padding: 20px;
+  height: calc(100vh - 100px); /* Adjust for your layout */
+  overflow-y: auto; /* Allow scrolling if messages exceed the container height */
+}
+
+.message-item {
+  display: flex;
+  flex-direction: column;
+  background-color: #36393f;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
+  color: white;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #b9bbbe;
+}
+
+.message-sender {
+  font-weight: bold;
+  color: #fff; /* Make the sender's name more visible */
+}
+
+.message-timestamp {
+  font-size: 0.75rem;
+  color: #72767d;
+}
+
+.message-content p {
+  margin: 5px 0;
+  font-size: 1rem;
+  color: #dcddde;
+}
+
+.message-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 5px;
+}
+
+.message-actions button {
+  background: none;
+  border: none;
+  color: #b9bbbe;
+  margin-left: 10px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.message-actions button:hover {
+  color: #fff;
+}
+
+/* Chat Input */
+.chat-input {
+  background-color: #1f2937;
+  border-top: 1px solid #374151;
+  padding: 16px;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  background-color: #374151;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.input-field {
+  flex: 1;
+  background-color: transparent;
+  color: white;
+  border: none;
+  outline: none;
+}
+
+.emoji-btn, .send-btn {
+  background-color: transparent;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.emoji-picker {
+  position: absolute;
+  bottom: 56px;
+  right: 0;
+}
+
+button.text-blue-500, button.text-red-500 {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.message {
+  background-color: #1f2937;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  transition: background-color 0.3s ease;
+}
+
+/* Edit & Delete Buttons */
+button.text-blue-500 {
+padding: 4px 8px;
+border-radius: 4px;
+font-size: 14px;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+
+
+button.text-red-500 {
+padding: 6px 12px;        /* Adjust padding */
+border-radius: 8px;       /* Rounded corners */
+font-size: 14px;          /* Font size */
+cursor: pointer;          /* Pointer on hover */
+background-color: #ef4444; /* Red background */
+color: white;             /* White text */
+border: none;             /* Remove border */
+transition: background-color 0.3s ease; /* Smooth hover transition */
+}
+
+button.text-red-500:hover {
+background-color: #b91c1c; /* Darker red on hover */
+}
+
+.file-btn {
+background-color: transparent;
+cursor: pointer;
+display: flex;
+align-items: center;
+}
+
+/* Send Button */
+.send-btn {
+background-color: transparent;
+border: none;
+cursor: pointer;
+}
+
+

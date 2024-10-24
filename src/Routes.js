@@ -11,6 +11,7 @@ import AccountInfo from './pages/components/AccountInfo';
 import ProfileEdit from './pages/components/ProfileEdit';
 import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
+import { fetchUserData } from './firebaseService';
 
 import bannerImage from './pages/images/image-1.jpg';
 import profileImage from './pages/images/profile-1.jpeg';
@@ -18,6 +19,9 @@ import profileImage from './pages/images/profile-1.jpeg';
 function App() {
     const [serverDetails, setServerDetails] = useState(null);
     const [selectedChannel, setSelectedChannel] = useState('general');
+    const [username, setUsername] = useState('');
+
+    const hardcodedUserId = 'gsF4jZRJisRJixh7JX0lMOSsOmD3';
 
     const [profileData, setProfileData] = useState({
         displayName: 'Khan Mahmud',
@@ -48,6 +52,19 @@ function App() {
             ...updatedData,
         });
     };
+
+    useEffect(() => {
+        const fetchUsername = async () => {
+            const userData = await fetchUserData(hardcodedUserId);
+            if (userData && userData.displayName) {
+                setUsername(userData.displayName);  
+            } else {
+                console.error('Failed to fetch user data.');
+            }
+        };
+
+        fetchUsername();  
+    }, []); 
 
     // Use this to help or url processing, its an extension of our Routing System
     const navigate = useNavigate();
@@ -98,7 +115,7 @@ function App() {
 
             {/* Chat on the right */}
             {selectedChannel && serverDetails && (
-                <ChatApp serverDetails={serverDetails} selectedChannel={selectedChannel} />
+                <ChatApp serverDetails={serverDetails} selectedChannelId={selectedChannel} username={username}/>
             )}
 
             {/* Routes for other pages */}
