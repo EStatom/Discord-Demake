@@ -98,6 +98,9 @@ export const sendMessageToFirebase = async (message, fileURL, serverId, channelI
     }
   };
   
+
+
+  
 // Function to upload a file (image/PDF) to Firebase Storage
 export const uploadFileToFirebase = async (file) => {
 try {
