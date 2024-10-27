@@ -1,44 +1,42 @@
 import React, { useEffect, useState } from 'react';
 import { Settings, Plus, Trash, User } from 'lucide-react';
 import { fetchChannels, createChannelInServer, deleteChannelFromServer, fetchUserData } from './../../firebaseService'; 
+import { signOut } from "firebase/auth";
+import { auth } from './../../firebase';
 import AddChannelModal from './AddChannelModal';
 import ConfirmationModal from './ConfirmationModal';
 import './../styles/ChannelList.css'; 
 
-const ChannelList = ({ serverDetails, onSelectChannel, userId }) => {
+const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
     const [channels, setChannels] = useState([]);
     const [activeChannel, setActiveChannel] = useState(null);
     const [isAddChannelModalOpen, setIsAddChannelModalOpen] = useState(false); 
     const [isDeleteChannelModalOpen, setIsDeleteChannelModalOpen] = useState(false); 
     const [channelToDelete, setChannelToDelete] = useState(null);
-    const [userData, setUserData] = useState(null);
-
-    const hardcodedUserId = 'gsF4jZRJisRJixh7JX0lMOSsOmD3';
+    const [isLogoutMenuOpen, setIsLogoutMenuOpen] = useState(false); 
 
     useEffect(() => {
         if (serverDetails) {
             fetchChannels(serverDetails.id).then(fetchedChannels => {
                 setChannels(fetchedChannels);
 
-                if (fetchedChannels.length > 0) {
-                    setActiveChannel(fetchedChannels[0].id);  // Set the first channel as active
+                if (!activeChannel && fetchedChannels.length > 0) {
+                    const firstChannelId = fetchedChannels[0].id;
+                    setActiveChannel(firstChannelId);  // Set the first channel as active
                     onSelectChannel(serverDetails.id, fetchedChannels[0].id);  // Select the first channel
                 }
             });
         }
-        if (hardcodedUserId) {
-            fetchUserData(hardcodedUserId).then((data) => {
-                if (data) {
-                    console.log("Full user document fetched from Firebase:", data);  // Log full user data
-                    setUserData(data);  // Set the user data in the state
-                } else {
-                    console.log("No user data found for userId:", hardcodedUserId);
-                }
-            }).catch(error => {
-                console.error("Error fetching user data:", error);
-            });
+    }, [serverDetails, onSelectChannel]);
+
+    const handleLogout = async () => {
+        try {
+            await signOut(auth);
+            console.log("User has logged out");
+        } catch (error) {
+            console.error("Error logging out:", error);
         }
-    }, [serverDetails, userId]);
+    };
 
     const handleSelectChannel = (channelId) => {
         setActiveChannel(channelId);  // Set the selected channel as active
@@ -74,12 +72,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId }) => {
         setIsDeleteChannelModalOpen(true);  
     };
 
-    const abbreviateUserId = (id, length = 12) => {
-        if (id.length > length) {
-            return id.slice(0, length) + '...'; 
-        }
-        return id;  
-    };
+    console.log("User data in ChannelList:", userData);
 
     return (
         <div className="channel-list-container">
@@ -117,12 +110,34 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId }) => {
                         className="user-avatar"
                     />
                     <div className="user-details">
-                        <span className="username">{userData?.displayName || 'Username'}</span>
-                        <span className="user-id">#{abbreviateUserId(hardcodedUserId)}</span>
+                        <span className="username">{userData?.username || 'Username'}</span>
                     </div>
                 </div>
-                <Settings className="user-settings-icon" />  
+                <Settings className="user-settings-icon"  
+                onClick={() => setIsLogoutMenuOpen(!isLogoutMenuOpen)}/> 
+            
+
+            {/* Logout Menu */}
+            {isLogoutMenuOpen && (
+                    <div className="logout-menu">
+                        <button onClick={handleLogout} className="logout-button">Log Out</button>
+                    </div>
+                )}
             </div>
+
+             {/* Add Channel Modal */}
+             <AddChannelModal
+                isOpen={isAddChannelModalOpen} 
+                onConfirm={async (channelName, clearInput) => {
+                    if (channelName.trim() !== '') {
+                        await createChannelInServer(serverDetails.id, channelName, channelName);  
+                        setIsAddChannelModalOpen(false);
+                        fetchChannels(serverDetails.id).then(setChannels);
+                        clearInput();
+                    }
+                }}
+                onCancel={() => setIsAddChannelModalOpen(false)}  
+            />
 
             {/* Add Channel Modal */}
             <AddChannelModal

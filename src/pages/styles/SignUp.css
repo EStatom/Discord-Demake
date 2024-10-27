@@ -46,22 +46,24 @@ input:focus {
   border: 1px solid #7289da;
 }
 
-button, .ok-button {
-  padding: 10px;
-  background-color: #5865f2; /* Discord button color */
-  color: white;
-  font-weight: bold;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-  width: 100%;
-  margin-top: 15px;
-}
-
-button:hover, .ok-button:hover {
-  background-color: #4752c4; /* Darker button hover color */
-}
+/* Replace button with .signup-container button */
+.signup-container button, .signup-container .ok-button {
+    padding: 10px;
+    background-color: #5865f2;
+    color: white;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    width: 100%;
+    margin-top: 15px;
+  }
+  
+  .signup-container button:hover, .signup-container .ok-button:hover {
+    background-color: #4752c4;
+  }
+  
 
 .success-message, .error-message {
   text-align: center;

@@ -30,8 +30,8 @@ const fetchUserData = async (userId) => {
         const userSnap = await getDoc(userRef);
 
         if (userSnap.exists()) {
-            console.log("Full user document:", userSnap.data());  // Log the entire document
-            const userData = userSnap.data().userData;  // Access the userData map
+            const userData = userSnap.data();
+            console.log("Full user document:", userData);  // Log the entire document
             return userData;
         } else {
             console.log('No such user in Firestore!');

@@ -87,23 +87,6 @@ const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage }) 
   );
 };
 
-// Individual Message Component
-const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
-  return (
-    <div className="message">
-      <div className="message">
-        <p className="message-sender">{sender}</p>
-        <p>{content}</p>
-        {fileURL && <a href={fileURL} target="_blank" rel="noopener noreferrer" className="text-blue-400">Download File</a>}
-        <span className="message-timestamp">{timestamp}</span>
-        <div className="flex space-x-2 mt-2">
-          <button onClick={onDelete} className="text-red-500">Delete</button>
-          <button onClick={onEdit} className="text-blue-500">Edit</button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Chat Input Component
 const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
@@ -177,7 +160,7 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
 };
 
 // Main Chat App Component
-const ChatApp = ({ serverDetails, selectedChannelId, username }) => {
+const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState([]);
 
@@ -238,7 +221,7 @@ const ChatApp = ({ serverDetails, selectedChannelId, username }) => {
         <ChatInput 
           selectedServerId={serverDetails ? serverDetails.id : null} 
           selectedChannelId={selectedChannelId} 
-          username={username}
+          username={userData?.username}
         />
       </div>
     </div>

@@ -1,5 +1,7 @@
 import React, {useState, useEffect} from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from './firebase';
 import Landing from './pages/components/Landing';
 import Sidebar from './Sidebar';
 import ChannelList from './pages/components/ChannelList';
@@ -13,58 +15,29 @@ import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { fetchUserData } from './firebaseService';
 
-import bannerImage from './pages/images/image-1.jpg';
-import profileImage from './pages/images/profile-1.jpeg';
-
 function App() {
     const [serverDetails, setServerDetails] = useState(null);
     const [selectedChannel, setSelectedChannel] = useState('general');
-    const [username, setUsername] = useState('');
+    const [user, setUser] = useState(null);  
+    const [userData, setUserData] = useState(null);
 
-    const hardcodedUserId = 'gsF4jZRJisRJixh7JX0lMOSsOmD3';
+    const hardcodedUserId = 'wgb7YJv1bGQUVn6z48tIzjGyHBF2';
 
-    const [profileData, setProfileData] = useState({
-        displayName: 'Khan Mahmud',
-        username: 'khan_latech',
-        email: '******@email.latech.edu',
-        phoneNumber: '******5630',
-        pronouns: '',
-        avatar: profileImage,
-        banner: bannerImage,
-        joinedDate: 'January 1, 2020',
-        friendsList: [
-          {
-            name: 'Friend 1',
-            avatar: './images/friend1.jpg',
-            status: 'online',
-          },
-          {
-            name: 'Friend 2',
-            avatar: './images/friend2.jpg',
-            status: 'offline',
-          },
-        ],
-      });
-
-    const handleProfileChange = (updatedData) => {
-        setProfileData({
-            ...profileData,
-            ...updatedData,
-        });
-    };
 
     useEffect(() => {
-        const fetchUsername = async () => {
-            const userData = await fetchUserData(hardcodedUserId);
-            if (userData && userData.displayName) {
-                setUsername(userData.displayName);  
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                fetchUserData(currentUser.uid).then((data) => {
+                    console.log("Fetched user data:", data);  // Debugging log
+                    setUserData(data);  // Ensures userData is set properly
+                });
             } else {
-                console.error('Failed to fetch user data.');
+                setUserData(null);  // Reset userData if no currentUser
             }
-        };
-
-        fetchUsername();  
-    }, []); 
+        });
+        return unsubscribe;
+    }, []);
 
     // Use this to help or url processing, its an extension of our Routing System
     const navigate = useNavigate();
@@ -105,28 +78,38 @@ function App() {
 
     return (
         <div style={{ display: 'flex', flexDirection: 'row', width: '100vw', height: '100vh' }}>
-            {/* Sidebar on the left */}
-            <Sidebar onSelectServer={handleSelectedServer} />
-
-            {/* Channel list in the middle */}
-            {serverDetails && (
-                <ChannelList serverDetails={serverDetails} onSelectChannel={handleSelectedChannel} />
+            {!user ? (
+                <Routes>
+                    <Route path="/login" element={<Login setUser={setUser} />} />
+                    <Route path="/signup" element={<SignUp />} />
+                    <Route path="/forgotpassword" element={<ForgotPassword />} />
+                    <Route path="*" element={<Navigate to="/login" replace />} />  {/* Redirect to /login by default */}
+                </Routes>
+            ) : (
+                <>
+                    <Sidebar onSelectServer={handleSelectedServer} />
+                    {serverDetails && (
+                        <ChannelList 
+                            serverDetails={serverDetails} 
+                            onSelectChannel={handleSelectedChannel} 
+                            userId={user?.uid}
+                            userData={userData}
+                        />
+                    )}
+                    {selectedChannel && serverDetails && (
+                        <ChatApp 
+                            serverDetails={serverDetails} 
+                            selectedChannelId={selectedChannel} 
+                            userData={userData}
+                        />
+                    )}
+                    <Routes>
+                        <Route path="/" element={<Landing />} />
+                        <Route path="/accountinfo" element={<AccountInfo />} />
+                        <Route path="/profileedit" element={<ProfileEdit />} />
+                    </Routes>
+                </>
             )}
-
-            {/* Chat on the right */}
-            {selectedChannel && serverDetails && (
-                <ChatApp serverDetails={serverDetails} selectedChannelId={selectedChannel} username={username}/>
-            )}
-
-            {/* Routes for other pages */}
-            <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/Login" element={<Login />} />
-                <Route path="/Signup" element={<SignUp />} />
-                <Route path="/ForgotPassword" element={<ForgotPassword />} />
-                <Route path="/AccountInfo" element={<AccountInfo />} />
-                <Route path="/ProfileEdit" element={<ProfileEdit />} />
-            </Routes>
         </div>
     );
 }
