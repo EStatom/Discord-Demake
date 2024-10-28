@@ -12,8 +12,8 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100dvh;
-  width: 100%;
+  height: 100vh;
+  width: 100vw;
   background-color: #36393f; /* Discord dark background */
 }
 
@@ -29,33 +29,33 @@ body, html {
   padding: 40px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-  width: 400px;
+  max-width: 24rem;
   text-align: center;
 }
 
-h2 {
+.login-container h2 {
   color: #ffffff;
   font-size: 24px;
   margin-bottom: 10px;
 }
 
-p {
+.login-container p {
   color: #b9bbbe;
   margin-bottom: 20px;
 }
 
-form {
+.login-container form {
   display: flex;
   flex-direction: column;
 }
 
-label {
+.login-container label {
   color: #b9bbbe;
   text-align: left;
   margin-bottom: 5px;
 }
 
-input {
+.login-container input {
   padding: 10px;
   margin-bottom: 15px;
   border: none;
@@ -64,14 +64,15 @@ input {
   color: white;
 }
 
-input:focus {
+.login-container input:focus {
   outline: none;
   border: 1px solid #7289da;
 }
 
-button {
+/* Replace button with .login-container button */
+.login-container button {
   padding: 10px;
-  background-color: #5865f2; /* Discord button color */
+  background-color: #5865f2;
   color: white;
   font-weight: bold;
   border: none;
@@ -80,9 +81,10 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
-  background-color: #4752c4; /* Darker button hover color */
+.login-container button:hover {
+  background-color: #4752c4;
 }
+
 
 .extra-options {
   display: flex;

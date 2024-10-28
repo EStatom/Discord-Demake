@@ -1,15 +1,25 @@
-// src/components/ProfileEdit.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Use for navigation
+import { useNavigate } from 'react-router-dom';
+import { auth, db } from './../../firebase'; // Firebase import
+import { doc, setDoc } from 'firebase/firestore';
 import './../styles/profile-edit.css';
 
-// Import local images for ProfileEdit
-import editBannerImage from './../images/image-3.jpg';
-const defaultProfileImage = "https://via.placeholder.com/100"; // Placeholder or default image
+// Provide a default profile image and banner image
+const defaultProfileImage = './images/default-avatar.png'; // Change this to the path of your default profile image
+const editBannerImage = './images/default-banner.jpg'; // Change this to the path of your default banner image
 
-const ProfileEdit = ({ profileData, onProfileChange }) => {
-  const [localProfileData, setLocalProfileData] = useState(profileData);
-  const navigate = useNavigate(); // For navigation
+const ProfileEdit = ({ profileData = {} }) => { // Provide a default value for profileData
+  const [localProfileData, setLocalProfileData] = useState({
+    displayName: profileData.displayName || '', // Provide default value if undefined
+    username: profileData.username || '',
+    email: profileData.email || '',
+    phoneNumber: profileData.phoneNumber || '',
+    pronouns: profileData.pronouns || '',
+    avatar: profileData.avatar || defaultProfileImage,
+    banner: profileData.banner || editBannerImage,
+  });
+
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,13 +47,20 @@ const ProfileEdit = ({ profileData, onProfileChange }) => {
     });
   };
 
-  const handleSave = () => {
-    onProfileChange(localProfileData);  // Save changes to parent
-    alert('Changes saved!');
-    navigate('/account-info');  // Go back to AccountInfo after saving
+  const handleSave = async () => {
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        await setDoc(userRef, localProfileData, { merge: true }); // Save changes to Firestore
+        alert('Changes saved!');
+        navigate('/account-info');  // Go back to AccountInfo after saving
+      }
+    } catch (error) {
+      alert('Error saving changes: ' + error.message);
+    }
   };
 
-  // Handle cancel and go back without saving
   const handleCancel = () => {
     const confirmCancel = window.confirm('Are you sure you want to cancel your changes?');
     if (confirmCancel) {
@@ -56,10 +73,17 @@ const ProfileEdit = ({ profileData, onProfileChange }) => {
       <h2>Edit Profile</h2>
       <div className="profile-banner">
         <div className="banner-image">
-          <img src={editBannerImage} alt="Edit Profile Banner" className="banner-img" />
+          <img
+            src={localProfileData.banner || editBannerImage} // Use default if banner is not available
+            alt="Edit Profile Banner"
+            className="banner-img"
+          />
         </div>
         <div className="profile-avatar">
-          <img src={localProfileData.avatar} alt="Profile Avatar" />
+          <img
+            src={localProfileData.avatar || defaultProfileImage} // Use default if avatar is not available
+            alt="Profile Avatar"
+          />
         </div>
         <div className="profile-details">
           <h3>{localProfileData.displayName}</h3>

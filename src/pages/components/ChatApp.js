@@ -8,25 +8,73 @@ import { db } from '../../firebase';
 import { Menu, Hash, Search, Smile, Plus, Send } from 'lucide-react';
 import './../styles/ChatApp.css';
 
+// HighlightedText Component
+const HighlightedText = ({ text, highlight }) => {
+  if (!highlight.trim()) {
+    return <span>{text}</span>;
+  }
+// highlight: This is the search term the user has entered (the text we want to highlight in the message)
+      // highlight.trim() removes any spaces before or after the search term.
+  const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+  return (
+    <span>
+      {parts.map((part, index) =>
+        part.toLowerCase() === highlight.toLowerCase() ? (
+          <span key={index} style={{ backgroundColor: 'yellow' }}>{part}</span>
+        ) : (
+          part
+        )
+      )}
+    </span>
+  );
+
+
+   // This line splits the original message (text) into parts wherever the search term (highlight) appears
+    //new RegExp is a regular expression that helps find the search term in the message.
+    {/*
+      The g flag means "global," which tells the regular expression to find all occurrences of the search term in the text, not just the first one.
+Without the g flag, the regular expression would stop after finding the first match.
+
+The i flag : it is  meaning it will match the term regardless of whether it is in uppercase or lowercase. 
+      */}
+        // style={{ backgroundColor: 'yellow' }}: This sets the background color of the matching text to yellow, making it stand out.
+    // {part}: This is the text that matched the search term, displayed inside the highlighted span
+    // index: This is the position of the current part in the array
+    // part.toLowerCase(): Converts the current section of the text (the part) to lowercase.
+    //style={{ backgroundColor: 'yellow' }}: The matching part will have a yellow background.
+};
+
+
+
 // Chat Header Component
 const ChatHeader = ({ name, serverId, type, onSearch }) => {
   const [searchTerm, setSearchTerm] = useState('');
 // searchTerm: it is to store what the user has typed into the search bar.
 // setSearchTerm: This is a function that updates searchTerm. Whenever the user types something new, setSearchTerm will update it.
-  const handleSearch = (e) => { // Whenever the user types in the search box, it will update.
-    const value = e.target.value; // this part is updating the search term (the text in the search box) with whatever the user types.
+  //useState: this is a piece of data I want to remember and update as the user interacts with the app// setSearchTerm: This is a function that updates searchTerm. Whenever the user types something new, setSearchTerm will update it.
+  const handleSearch = (e) => { 
+    // Whenever the user types in the search box, it will update.
+   
+      {/*
+        // handleSearch :
+        1- Capture what the user has typed.
+        2- Update the state (searchTerm) with the new text.
+        3- If a search function (onSearch) has been provided, it triggers that function to perform the search.
+        */}
+    const value = e.target.value;
+     // this part is updating the search term (the text in the search box) with whatever the user types.
+     //e.target.value: it is the current text that the user has typed in the search box.
+
     setSearchTerm(value);   
     if (onSearch) {
       onSearch(value);  // Ensure onSearch is called correctly
     }    
   };
+// onSearch(value): If onSearch exists, it gets called with the latest search term (value). 
 
   return (
     <div className="chat-header">
-      {/*className="flex items-center justify-between": This applies CSS classes from Tailwind CSS. It makes the content inside the div flexible (arranged in a row), aligns the items vertically in the center (items-center), and spaces them out evenly (justify-between)*/}
-      {/*p-4: Adds padding around the content*/}
-      {/*bg-gray-900 text-white: The background color is dark gray, and the text color is white.*/}
-      {/*border-b border-gray-700: Adds a bottom border in a slightly lighter gray.*/}
+      
       <div className="header-left">
         <Menu className="w-5 h-5" />
                  {/*<Menu className="w-5 h-5" />: This renders a menu icon with width and height of 5 units. This could represent options/settings.*/}
@@ -39,11 +87,7 @@ const ChatHeader = ({ name, serverId, type, onSearch }) => {
       </div>
       <div className="header-search">
         <Search className="search-icon" />
-        {/*bg-gray-700: Sets a darker gray background for the search bar.*/}
-               {/*rounded-lg: Adds rounded corners to the search bar.*/}
-               {/* p-2: Adds padding around the search bar content.*/}
-               {/*space-x-2: Adds space between the search icon and the input field.*/}
-               {/*w-[40%]: Sets the width of the search bar to 40% of the available space in the header*/}
+        
         <input
           type="text"
           placeholder="Search..."  //placeholder="Search...": This is the placeholder text that appears when the input is empty.
@@ -74,18 +118,23 @@ const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage }) 
             <span className="message-timestamp">{new Date(message.timestamp).toLocaleTimeString()}</span>
           </div>
           <div className="message-content">
-            <p>{message.content}</p>
-            {message.fileURL && <a href={message.fileURL} target="_blank" rel="noopener noreferrer">View File</a>}
+            <p>
+              <HighlightedText text={message.content || ''} highlight={searchTerm} />
+            </p>
+            {message.fileURL && <a href={message.fileURL} target="_blank" rel="noopener noreferrer">📁 Download File</a>}
           </div>
           <div className="message-actions">
-            <button onClick={() => onEditMessage(message.id, prompt('Edit message:', message.content))}>Edit</button>
+            <button onClick={() => onEditMessage(message.id, prompt('Edit message:', message.content || ''))}>Edit</button>
             <button onClick={() => onDeleteMessage(message.id)}>Delete</button>
           </div>
         </div>
+        //  <HighlightedText text={message.content || ''} highlight={searchTerm} />
+        // it is to reduce the complexity 
       ))}
     </div>
   );
 };
+
 
 // Individual Message Component
 const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
@@ -103,45 +152,74 @@ const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
       </div>
     </div>
   );
+{/*
+  <p className="message-sender">{sender}</p>
+<p>{content}</p>
+Displays the sender’s name and the message content.
+
+If the message has an attached file (fileURL), it shows a link to download the file. This link opens in a new tab.
+###########################################
+  <span className="message-timestamp">{timestamp}</span>
+  Displays the time the message was sent.
+##########################################
+<button onClick={onDelete} className="text-red-500">Delete</button>
+<button onClick={onEdit} className="text-blue-500">Edit</button>
+
+// These buttons allow the user to delete or edit the message using the provided onDelete and onEdit functions, which are passed as props.
+  */}
+
+
+
 };
 
 // Chat Input Component
 const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
   const [message, setMessage] = useState('');
+// message: This is the current value of the chat input (what the user has typed).
+  // setMessage: This is the function that you call whenever you want to change or update the value of message.
+  //useState('') initializes the message state as an empty string, and setMessage is the function to update it as the user types.
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+ // showEmojiPicker: This is a boolean (either true or false) that tells whether the emoji picker is currently shown (true) or hidden (false).
+  //setShowEmojiPicker: A function to update the showEmojiPicker state.
   const [file, setFile] = useState(null);
   
   const sendMessage = async () => {
     let fileURL = null;
 
     if (file) {
-      console.log('Uploading file:', file.name); // Debugging log for file upload
-      fileURL = await uploadFileToFirebase(file); // Upload the file to Firebase
+      console.log('Uploading file:', file.name); 
+      fileURL = await uploadFileToFirebase(file); // to upload the file to Firebase
       console.log('File uploaded, URL:', fileURL); // Log the uploaded file URL
-      setFile(null); // Clear the file after upload
+      setFile(null); // to clear the file after upload
     }
 
     if (message.trim() !== '' || fileURL) {
-      console.log('Sending message with content:', message); // Debugging log for message content
-      console.log('Sending file URL:', fileURL, selectedServerId, selectedChannelId); // Debugging log for file URL
-      await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username); // Send message and fileURL to Firebase
-      setMessage(''); // Clear message after sending
+      console.log('Sending message with content:', message);
+      console.log('Sending file URL:', fileURL, selectedServerId, selectedChannelId); 
+      await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username); // to send message and fileURL to Firebase
+      setMessage(''); // to clear message after sending
     }
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
+      //e.key === 'Enter': This checks if the key that was pressed is the "Enter" key.
       sendMessage();
     }
   };
 
   const onEmojiClick = (emojiObject) => {
-    setMessage((prevMessage) => prevMessage + emojiObject.emoji); // Add emoji to message
-    console.log('Emoji added to message:', emojiObject.emoji); // Log the emoji added
+    setMessage((prevMessage) => prevMessage + emojiObject.emoji); // to add emoji to message
+    console.log('Emoji added to message:', emojiObject.emoji); 
   };
+//prevMessage is the current message content before adding the emoji.
+  //prevMessage + emojiObject.emoji concatenates the emoji to the existing message.
+
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]); // Store selected file
+         // Append the selected emoji to the message
+
+    setFile(e.target.files[0]);
     console.log('File selected:', e.target.files[0]); // Log selected file
   };
 
@@ -154,7 +232,11 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
           className="w-full bg-transparent text-white border-none outline-none"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
+           //onChange={(e) => setMessage(e.target.value)}: Whenever the user types something, this updates the message state with the new value (e.target.value is what the user typed).
+
           onKeyDown={handleKeyPress}
+         //onKeyDown={handleKeyPress}: Detects when the user presses a key. In this case, it listens for the Enter key to send the message when pressed.
+
         />
         <button className="emoji-btn" onClick={() => setShowEmojiPicker(!showEmojiPicker)}>
           <Smile className="emoji-icon" />
@@ -171,13 +253,18 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
         <div className="emoji-picker">
           <EmojiPicker onEmojiClick={onEmojiClick} />
         </div>
+         // showEmojiPicker && (...): Displays the emoji picker only when the state showEmojiPicker is true.
+        //showEmojiPicker is true, If the user has clicked the smiley button, this condition will be true and the emoji picker will appear.
       )}
     </div>
   );
 };
 
+
+
+
 // Main Chat App Component
-const ChatApp = ({ serverDetails, selectedChannelId, username }) => {
+const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState([]);
 
@@ -238,7 +325,7 @@ const ChatApp = ({ serverDetails, selectedChannelId, username }) => {
         <ChatInput 
           selectedServerId={serverDetails ? serverDetails.id : null} 
           selectedChannelId={selectedChannelId} 
-          username={username}
+          username={userData?.username}
         />
       </div>
     </div>

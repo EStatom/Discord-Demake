@@ -1,84 +1,119 @@
 // src/components/AccountInfo.js
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { auth, db } from './../../firebase'; // Ensure Firebase is properly configured
+import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
+import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
 import './../styles/account-info.css';
+import defaultBannerImage from './../images/image-1.jpg'; // Import your default banner image
+import defaultAvatarImage from './../images/image-6.png'; // Import your default avatar image
 
-// Import local banner image for AccountInfo
-import accountBannerImage from './../images/image-1.jpg'; // Banner image for AccountInfo
-
-const AccountInfo = ({ profileData }) => {
+const AccountInfo = () => {
+  const [profileData, setProfileData] = useState(null);
+  const [currentPasswordVisible, setCurrentPasswordVisible] = useState(false);
+  const [newPasswordVisible, setNewPasswordVisible] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [showChangePassword, setShowChangePassword] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Fetch the profile data from Firebase
+    const fetchProfileData = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setProfileData(docSnap.data());
+        }
+      }
+    };
+    fetchProfileData();
+  }, []);
+
+  if (!profileData) {
+    return <p>Loading...</p>;
+  }
+
+  // Navigate to profile edit page
   const handleEditProfileClick = () => {
-    navigate('/ProfileEdit');
+    navigate('/profile-edit');
+  };
+
+  const handleMainPage = () => {
+    navigate('/profile');
   };
 
   // Function to handle disabling the account
-  const handleDisableAccount = () => {
+  const handleDisableAccount = async () => {
     const confirmDisable = window.confirm(
       "Are you sure you want to disable your account? This will log you out."
     );
     if (confirmDisable) {
-      alert("Account disabled. You will be logged out.");
-      // Logic for disabling the account, e.g., send a request to the backend
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          // Get the Firestore document reference for the current user
+          const docRef = doc(db, 'users', user.uid);
+
+          // Update the `isDisabled` field in the Firestore document to true
+          await updateDoc(docRef, { isDisabled: true });
+
+          alert("Account disabled. You will be logged out.");
+          await auth.signOut(); // Log the user out after disabling the account
+          navigate('/'); // Redirect to the login page after logging out
+        }
+      } catch (error) {
+        alert(`Error disabling account: ${error.message}`);
+      }
     }
   };
 
   // Function to handle deleting the account
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       "Are you sure you want to permanently delete your account? This action cannot be undone."
     );
     if (confirmDelete) {
-      alert("Account deleted.");
-      // Logic for deleting the account, e.g., send a request to the backend
+      try {
+        const user = auth.currentUser;
+        // Delete user data from Firestore
+        await deleteDoc(doc(db, 'users', user.uid));
+        // Delete user authentication record
+        await deleteUser(user);
+        alert("Account deleted.");
+        navigate('/'); // Redirect to homepage or login page
+      } catch (error) {
+        alert("Error deleting account: " + error.message);
+      }
     }
   };
 
-  // Function to handle changing the password
-  const handleChangePassword = () => {
-    const newPassword = prompt("Enter your new password:");
-    if (newPassword) {
-      alert("Password changed successfully.");
-      // Logic to change the password, e.g., send a request to the backend
-    }
-  };
+  // Function to handle changing the password with re-authentication
+  const handleChangePassword = async () => {
+    if (currentPassword && newPassword) {
+      try {
+        const user = auth.currentUser;
 
-  // Function to handle enabling the authenticator app
-  const handleEnableAuthenticatorApp = () => {
-    alert("Authenticator app enabled.");
-    // Logic to enable 2FA using an authenticator app
-  };
+        // Create a credential using the user's email and current password
+        const credential = EmailAuthProvider.credential(user.email, currentPassword);
 
-  // Function to handle registering a security key
-  const handleRegisterSecurityKey = () => {
-    alert("Security key registered.");
-    // Logic to register a security key, e.g., WebAuthn or similar method
-  };
+        // Reauthenticate the user
+        await reauthenticateWithCredential(user, credential);
 
-  const handleMainPage = () => {
-    navigate('/'); // Redirect to the main page or any other page
-  };
+        // Update the user's password after successful re-authentication
+        await updatePassword(user, newPassword);
 
-  const renderFriendStatus = (status) => {
-    switch (status) {
-      case 'online':
-        return <span className="status-dot online"></span>;
-      case 'offline':
-        return <span className="status-dot offline"></span>;
-      default:
-        return <span className="status-dot custom"></span>;
-    }
-  };
-
-  const renderUserStatus = (status) => {
-    switch (status) {
-      case 'online':
-        return <span className="status-dot online user-status"></span>;
-      case 'offline':
-        return <span className="status-dot offline user-status"></span>;
-      default:
-        return <span className="status-dot custom user-status"></span>;
+        alert("Password changed successfully.");
+        // Reset the state after successful password change
+        setShowChangePassword(false);
+        setCurrentPassword('');
+        setNewPassword('');
+      } catch (error) {
+        // Handle errors such as incorrect current password, weak new password, etc.
+        alert("Error changing password: " + error.message);
+      }
     }
   };
 
@@ -86,87 +121,112 @@ const AccountInfo = ({ profileData }) => {
     <div className="account-info-page">
       <h2>My Account</h2>
 
-      {/* Close Button */}
-      <button className="close-btn" onClick={handleMainPage}>
-        ✕ <span>Close</span>
-      </button>
-
-      {/* Banner and Profile Picture */}
-      <div className="profile-banner">
-        <div className="banner-image">
-          <img src={accountBannerImage} alt="Account Banner" className="banner-img" />
-        </div>
-        <div className="profile-avatar">
-          <img src={profileData.avatar} alt="Profile Avatar" />
-          {renderUserStatus(profileData.status)} {/* Render user status */}
-        </div>
-        <div className="profile-details">
-          <h3>{profileData.displayName}</h3>
-          <button className="edit-profile-btn" onClick={handleEditProfileClick}>
-            Edit User Profile
-          </button>
-        </div>
+      {/* Floating Close Button */}
+      <div className="close-btn-container" onClick={handleMainPage}>
+        <div className="close-btn-circle">✕</div>
+        <span className="close-btn-text">Close</span>
       </div>
 
-      {/* Display other account information options with Edit Buttons */}
-      <div className="user-info">
-        <div className="info-section">
-          <p><strong>Display Name</strong></p>
-          <p>{profileData.displayName}</p>
-          <button className="edit-btn" onClick={handleEditProfileClick}>Edit</button>
-        </div>
-        <div className="info-section">
-          <p><strong>Username</strong></p>
-          <p>{profileData.username}</p>
-          <button className="edit-btn" onClick={handleEditProfileClick}>Edit</button>
-        </div>
-        <div className="info-section">
-          <p><strong>Email</strong></p>
-          <p>{profileData.email}</p>
-          <button className="edit-btn" onClick={handleEditProfileClick}>Edit</button>
-        </div>
-        <div className="info-section">
-          <p><strong>Phone Number</strong></p>
-          <p>{profileData.phoneNumber}</p>
-          <button className="edit-btn" onClick={handleEditProfileClick}>Edit</button>
-        </div>
-        <div className="info-section">
-          <p><strong>Joined Date</strong></p>
-          <p>{profileData.joinedDate}</p>
-        </div>
-      </div>
-
-      {/* Friends List Section */}
-      <div className="friends-list">
-        <h2>Friends List</h2>
-        <div className="friends-avatars">
-          {profileData.friendsList.map((friend, index) => (
-            <div key={index} className="friend">
-              <img src={friend.avatar} alt={friend.name} className="friend-avatar" />
-              {renderFriendStatus(friend.status)}
-              <p>{friend.name}</p>
+      {!showChangePassword ? (
+        <>
+          {/* Banner and Profile Picture */}
+          <div className="profile-banner">
+            <div className="banner-image">
+              <img
+                src={profileData.banner || defaultBannerImage}
+                alt="Account Banner"
+                className="banner-img"
+              />
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="profile-avatar">
+              <img
+                src={profileData.profilePicture || defaultAvatarImage}
+                alt="Profile Avatar"
+                className="avatar-img"
+              />
+            </div>
+            <div className="profile-details">
+              <h3>{profileData.displayName}</h3>
+              <button className="edit-profile-btn" onClick={handleEditProfileClick}>
+                Edit User Profile
+              </button>
+            </div>
+          </div>
 
-      {/* Password and Authentication Section */}
-      <div className="password-auth-section">
-        <h2>Password and Authentication</h2>
-        <button className="auth-btn" onClick={handleChangePassword}>Change Password</button>
-        <button className="auth-btn" onClick={handleEnableAuthenticatorApp}>Enable Authenticator App</button>
-        <button className="auth-btn" onClick={handleRegisterSecurityKey}>Register a Security Key</button>
+          {/* Display other account information options */}
+          <div className="user-info">
+            {['Display Name', 'Username', 'Email', 'Phone Number'].map((label, index) => (
+              <div className="info-section" key={index}>
+                <p><strong>{label}</strong></p>
+                <p>{profileData[label.toLowerCase().replace(' ', '')]}</p>
+                <button className="edit-btn" onClick={handleEditProfileClick}>Edit</button>
+              </div>
+            ))}
+            <div className="info-section">
+              <p><strong>Joined Date</strong></p>
+              <p>{profileData.joinedDate}</p>
+            </div>
+          </div>
 
-        {/* Account Removal Section */}
-        <div className="account-removal">
-          <button className="disable-btn" onClick={handleDisableAccount}>
-            Disable Account
-          </button>
-          <button className="delete-btn" onClick={handleDeleteAccount}>
-            Delete Account
-          </button>
+          {/* Password and Authentication Section */}
+          <div className="password-auth-section">
+            <h2>Password and Authentication</h2>
+            <button className="auth-btn" onClick={() => setShowChangePassword(true)}>
+              Change Password
+            </button>
+          </div>
+
+          {/* Account Removal Section */}
+          <div className="account-removal">
+            <button className="disable-btn" onClick={handleDisableAccount}>
+              Disable Account
+            </button>
+            <button className="delete-btn" onClick={handleDeleteAccount}>
+              Delete Account
+            </button>
+          </div>
+        </>
+      ) : (
+        <div className="password-auth-section">
+          <h2>Change Password</h2>
+          <div className="password-inputs">
+            <div>
+              <label>Current Password:</label>
+              <div className="password-field">
+                <input
+                  type={currentPasswordVisible ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                />
+                <span
+                  className="toggle-visibility"
+                  onClick={() => setCurrentPasswordVisible(!currentPasswordVisible)}
+                >
+                  {currentPasswordVisible ? "🙈" : "👁️"}
+                </span>
+              </div>
+            </div>
+            <div>
+              <label>New Password:</label>
+              <div className="password-field">
+                <input
+                  type={newPasswordVisible ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                />
+                <span
+                  className="toggle-visibility"
+                  onClick={() => setNewPasswordVisible(!newPasswordVisible)}
+                >
+                  {newPasswordVisible ? "🙈" : "👁️"}
+                </span>
+              </div>
+            </div>
+          </div>
+          <button className="auth-btn" onClick={handleChangePassword}>Confirm Change</button>
+          <button className="cancel-btn" onClick={() => setShowChangePassword(false)}>Cancel</button>
         </div>
-      </div>
+      )}
     </div>
   );
 };
