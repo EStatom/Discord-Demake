@@ -117,7 +117,7 @@ const Login = ({ setUser }) => {
 
         <div className="extra-options">
           <button onClick={() => navigate('/signup')}>Sign Up</button>
-          <button onClick={() => navigate('/forgot-password')}>Forgot Password?</button>
+          <button onClick={() => navigate('/forgotpassword')}>Forgot Password?</button>
         </div>
       </div>
     </div>
