@@ -70,6 +70,7 @@ margin-left: auto;
   padding: 20px;
   height: calc(100vh - 100px); /* Adjust for your layout */
   overflow-y: auto; /* Allow scrolling if messages exceed the container height */
+  font-size: rem; 
 }
 
 .message-item {
@@ -208,6 +209,8 @@ display: flex;
 align-items: center;
 }
 
+
+
 /* Send Button */
 .send-btn {
 background-color: transparent;
@@ -216,3 +219,14 @@ cursor: pointer;
 }
 
 
+.plus-icon {
+  color: white; /* White icon color */
+  padding: 8px; /* Adjust padding to match the smiley face */
+  border-radius: 8px; /* Rounded corners */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.plus-icon:hover {
+  background-color:  #084af2; /* Darker blue on hover */
+}
