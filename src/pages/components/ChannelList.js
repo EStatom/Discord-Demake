@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Plus, Trash, User } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Settings, Plus, Trash } from 'lucide-react';
 import { fetchChannels, createChannelInServer, deleteChannelFromServer, fetchUserData } from './../../firebaseService'; 
 import { signOut } from "firebase/auth";
 import { auth } from './../../firebase';
@@ -14,6 +15,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
     const [isDeleteChannelModalOpen, setIsDeleteChannelModalOpen] = useState(false); 
     const [channelToDelete, setChannelToDelete] = useState(null);
     const [isLogoutMenuOpen, setIsLogoutMenuOpen] = useState(false); 
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (serverDetails) {
@@ -36,6 +38,11 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
         } catch (error) {
             console.error("Error logging out:", error);
         }
+    };
+
+    const handleEditProfile = () => {
+        setIsLogoutMenuOpen(false); 
+        navigate("/profileedit"); 
     };
 
     const handleSelectChannel = (channelId) => {
@@ -120,6 +127,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
             {/* Logout Menu */}
             {isLogoutMenuOpen && (
                     <div className="logout-menu">
+                        <button onClick={handleEditProfile} className="edit-profile-button">Edit Profile</button>
                         <button onClick={handleLogout} className="logout-button">Log Out</button>
                     </div>
                 )}

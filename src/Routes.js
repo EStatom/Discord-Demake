@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { Route, Routes, useNavigate, Navigate } from 'react-router-dom';
+import { Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
 import Landing from './pages/components/Landing';
@@ -41,6 +41,7 @@ function App() {
 
     // Use this to help or url processing, its an extension of our Routing System
     const navigate = useNavigate();
+    const location = useLocation();
 
     const fetchServerDetails = async (serverId) => {
         // First lets make sure the serverId is not null or undefined
@@ -74,7 +75,7 @@ function App() {
         navigate(`/server/${serverId}/channel/${channelId}`);
     }
 
-    
+    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/profileedit'].includes(location.pathname);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'row', width: '100vw', height: '100vh' }}>
@@ -83,12 +84,13 @@ function App() {
                     <Route path="/login" element={<Login setUser={setUser} />} />
                     <Route path="/signup" element={<SignUp />} />
                     <Route path="/forgotpassword" element={<ForgotPassword />} />
-                    <Route path="*" element={<Navigate to="/login" replace />} />  {/* Redirect to /login by default */}
+                    <Route path="*" element={<Navigate to="/login" replace />} />
                 </Routes>
             ) : (
                 <>
-                    <Sidebar onSelectServer={handleSelectedServer} />
-                    {serverDetails && (
+                    {/* Conditionally render sidebar and main components only on non-auth/profile routes */}
+                    {!isAuthOrProfileRoute && <Sidebar onSelectServer={handleSelectedServer} />}
+                    {!isAuthOrProfileRoute && serverDetails && (
                         <ChannelList 
                             serverDetails={serverDetails} 
                             onSelectChannel={handleSelectedChannel} 
@@ -96,7 +98,7 @@ function App() {
                             userData={userData}
                         />
                     )}
-                    {selectedChannel && serverDetails && (
+                    {!isAuthOrProfileRoute && selectedChannel && serverDetails && (
                         <ChatApp 
                             serverDetails={serverDetails} 
                             selectedChannelId={selectedChannel} 
