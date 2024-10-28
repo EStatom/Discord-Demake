@@ -2,33 +2,50 @@ import React, { useState, useEffect } from 'react';
 import { doc, getDoc, updateDoc ,arrayUnion, arrayRemove, setDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import sidebarStyles from './SidebarStyles';
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 
 
 const Sidebar = ({ onSelectServer }) => {
 
-  //pulling the list of servers for the current user. 
-  //ToDo: Update from static user to currently authenticated user.
 const [servers, setServers] = useState([]);
 const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null, x: 0, y: 0 });
+const [uid, setUid] = useState(null);
+
+const auth = getAuth();
+
+
+useEffect(() => {
+  const auth = getAuth();
+  const userId = onAuthStateChanged(auth, (user) => {
+    if (user) {
+      setUid(user.uid);
+    }
+  });
+
+  return () => userId(); 
+}, []);
+
+
+useEffect(() => {
+  if (uid) {  // Only fetch servers if uid is set
+    fetchServers();
+  }
+}, [uid]);
 
   const fetchServers = async () => {
-      const userDoc = await getDoc(doc(db, '/users/gsF4jZRJisRJixh7JX0lMOSsOmD3'));
+      const userDoc = await getDoc(doc(db, 'users', uid));
       const userServers = userDoc.data().Servers  || [];
       const serverList = await Promise.all(
         userServers.map(async (id) => {
           const serverDocRef = doc(db, 'servers', id);
           const serverDoc = await getDoc(serverDocRef);
-          console.log("Fetched server:", serverDoc.data()); // Logging server data
           return { id: serverDoc.id, ...serverDoc.data()};
         })
       );
       setServers(serverList);
       };
 
-  useEffect(() => {
-    fetchServers();
-  }, []);
 
 
   
@@ -53,7 +70,7 @@ const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null,
 
 
   const handleLeaveServer = async () => {
-    const userRef = doc(db, 'users', 'gsF4jZRJisRJixh7JX0lMOSsOmD3');
+    const userRef = doc(db, 'users', uid);
     await updateDoc(userRef, { Servers: arrayRemove(contextMenu.serverId) });
     fetchServers(); // Refresh the server list
     handleCloseContextMenu();
@@ -72,6 +89,9 @@ const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null,
     const [newServerName, setNewServerName] = useState('');
     const [newServerId, setNewServerId] = useState('');
     const [nameUpdate, setNameUpdate] = useState('');
+
+    const [joinServerError, setJoinServerError] = useState('');  
+    const [createServerError, setCreateServerError] = useState('');  
 
     const handleOpenMainPopup = () => setIsMainPopupVisible(true);
     const handleCloseMainPopup = () => setIsMainPopupVisible(false);
@@ -95,6 +115,7 @@ const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null,
       setIsCreateServerPopupVisible(false);
       setNewServerName('');
       setNewServerId('');
+      setCreateServerError('');
     };
 
     const handleOpenServerNameUpdatePopup = () => {
@@ -126,18 +147,19 @@ const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null,
 
     const handleSubmitJoinServer = async(e) => {
       e.preventDefault();
-      const joinRef = doc(db, 'users', 'gsF4jZRJisRJixh7JX0lMOSsOmD3');
+      const joinRef = doc(db, 'users', uid);
 
       try {
         const serverExists = await checkIfServerExistsJoin();
 
         if (!serverExists) {
-          alert('Server not found.  Please enter a valid Server ID.');
+          setJoinServerError('Sever not found. Please enter a valid Server ID');
           return;
         }
 
         await updateDoc(joinRef, {Servers: arrayUnion(inputJoinServer)});
         setInputJoinServer('');
+        setJoinServerError('');
         handleCloseJoinServerPopup();
         fetchServers();
       } catch(error) {
@@ -149,27 +171,30 @@ const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null,
     const handleSubmitCreateServer = async (e) => {
       e.preventDefault();
 
-      const randomImageNumber = Math.floor(Math.random() * 100) + 1;
+      const randomImageNumber = Math.floor(Math.random() * 50) + 1;
 
       try {
         const serverExists2 = await checkIfServerExistsCreate();
 
         if (serverExists2) {
-          alert('Server ID already exists.  Try a different ID.');
+          setCreateServerError('Server ID already exists.  Try a different ID.');
           return;
         } else {
           await setDoc(doc(db, 'servers', newServerId),
           {description:"Default", 
            image:`https://unsplash.it/600/400?image=${randomImageNumber}`,
            name: newServerName})
+
+           await setDoc(doc(db, 'servers', newServerId, 'channels', 'Channel1'), {name: "Channel1"});
           
-           const createRef = doc(db, 'users', 'gsF4jZRJisRJixh7JX0lMOSsOmD3');
+           const createRef = doc(db, 'users', uid);
            await updateDoc(createRef, {Servers: arrayUnion(newServerId)});
         }
       handleCloseCreateServerPopup();
       fetchServers();
       }catch(error) {
         console.error('Error joining server:', error);
+        setCreateServerError('Failed to create the server. Please try again');
       }
     };
 
@@ -277,6 +302,7 @@ const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null,
                 style={sidebarStyles.input}
                 placeholder="Server ID"
               />
+              {joinServerError && <p style={{color: 'red'}}>{joinServerError}</p>}
               <div style={sidebarStyles.buttonContainer}>
                 <button type="submit" style={sidebarStyles.submitButton}>
                   Submit
@@ -309,6 +335,7 @@ const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null,
                 style={sidebarStyles.input}
                 placeholder="Server ID"
               />
+              {createServerError && <p style={{ color: 'red' }}>{createServerError}</p>}
               <div style={sidebarStyles.buttonContainer}>
                 <button type="submit" style={sidebarStyles.submitButton}>
                   Create
