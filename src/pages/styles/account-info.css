@@ -1,111 +1,85 @@
+/* Account Info Page Styles */
 body, html {
   height: 100%;
   margin: 0;
   padding: 0;
   font-family: 'Arial', sans-serif;
-  background-color: #36393f; /* Discord's dark grey background */
-  color: #ffffff; /* White text */
+  background-color: #36393f;
+  color: #ffffff;
 }
 
 .account-info-page {
-  max-width: 800px;
+  width: 100%;
+  max-width: 1000px; /* Increased width to allow more space */
   margin: 20px auto;
   padding: 20px;
   color: white;
+  overflow-y: auto; /* Enable scrolling if content overflows */
+  box-sizing: border-box;
 }
 
-/* Profile Banner */
 /* Profile Banner */
 .profile-banner {
   position: relative;
   display: flex;
-  align-items: flex-end; /* Adjust alignment if needed */
+  align-items: center;
   justify-content: center;
   background-color: #2f3136;
   border-radius: 8px;
-  height: 250px;
-  margin-bottom: 80px;
-  overflow: hidden;
+  height: 300px; /* Increased height to provide more space */
+  width: 100%;
+  max-width: 800px; /* Set a max width for the banner */
+  margin: 0 auto; /* Center the banner horizontally */
+  overflow: hidden; /* Prevents overflow outside the container */
 }
 
+/* Style for the image inside the banner */
 .banner-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Ensures the image fully covers the container without distortion */
   border-radius: 8px;
 }
 
-/* Profile Avatar and Status Dot */
-.profile-avatar {
+/* Container for the profile details, profile picture, and edit button */
+.profile-details-container {
   position: absolute;
-  bottom: -60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 150px;
-  height: 150px;
-  background-color: #1d1e22; /* Dark background color for profile picture */
-  border-radius: 50%;
+  top: 20px; /* Adjusted top position */
+  right: 30px;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  border: 4px solid #36393f; /* Creates a border that blends with main background */
+  flex-direction: column; /* Stack elements vertically */
+  align-items: center; /* Center elements in the column */
+  text-align: center;
+  max-width: 250px; /* Set a width similar to user details fields */
 }
 
-.profile-avatar .avatar-img {
-  width: 90%;
-  height: 90%;
-  border-radius: 50%;
-  object-fit: cover;
+/* Display name */
+.profile-details-container h3 {
+  margin: 0;
+  font-size: 24px;
+  padding-bottom: 10px; /* Add some space below the display name */
 }
 
-
-/* Adjust Profile Avatar for Background Effect */
-.profile-avatar-background {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50%; /* Makes the profile picture occupy half the width of the banner */
-  height: 50%;
+/* Container for the profile picture */
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border: 5px solid #2f3136;
   border-radius: 50%;
   overflow: hidden;
+  background-color: #2f3136;
+  margin-bottom: 10px; /* Add space between the profile picture and the edit button */
 }
 
-
-/* Status dot for profile avatar */
-.user-status {
-  position: absolute;
-  bottom: 5px;
-  right: -5px;
-  width: 20px;
-  height: 20px;
+/* Style for the profile picture image */
+.profile-avatar .avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   border-radius: 50%;
-  border: 2px solid #2f3136;
 }
 
-/* Status Colors */
-.status-dot.online {
-  background-color: #43b581;
-}
-
-.status-dot.offline {
-  background-color: #747f8d;
-}
-
-.status-dot.custom {
-  background-color: #f04747;
-}
-
-.profile-details {
-  margin-left: 160px;
-  margin-top: 40px;
-}
-
-.profile-details h3 {
-  margin: 0;
-  color: white;
-}
-
+/* Edit Profile Button */
 .edit-profile-btn {
   background-color: #7289da;
   color: white;
@@ -113,7 +87,7 @@ body, html {
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  margin-top: 10px;
+  width: 100%; /* Make the button match the container width */
 }
 
 .edit-profile-btn:hover {
@@ -121,92 +95,39 @@ body, html {
 }
 
 /* User Info Section */
+.user-info {
+  width: 100%;
+  max-width: 800px; /* Match the banner width */
+  margin: 0 auto; /* Center the user info section */
+}
+
 .user-info .info-section {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   background-color: #2f3136;
-  padding: 12px; /* Reduced padding to create more space */
+  padding: 12px;
   margin-bottom: 12px;
   border-radius: 8px;
+  width: 100%; /* Make the info section match the container width */
+  box-sizing: border-box;
 }
 
 .user-info .info-section p {
-  margin: 0;
-}
-
-.edit-btn {
-  background-color: #4e5058;
-  color: white;
-  border: none;
-  padding: 4px 6px; /* Reduced padding to make the button smaller */
-  border-radius: 4px; /* Slightly smaller border radius for a compact look */
-  font-size: 14px; /* Smaller font size */
-  cursor: pointer;
-  transition: background-color 0.3s;
-  width: auto; /* Auto width to avoid taking up extra space */
-  min-width: 50px; /* Optional: Set a minimum width to maintain consistency */
-  text-align: center;
-}
-
-.edit-btn:hover {
-  background-color: #3d3f44;
-}
-
-/* Friends List Section */
-.friends-list {
-  margin-top: 30px;
-}
-
-.friends-avatars {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  margin-top: 15px;
-}
-
-.friend {
-  position: relative;
-  text-align: center;
-}
-
-.friend-avatar {
-  border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  border: 2px solid #2f3136;
-  object-fit: cover;
-}
-
-.status-dot {
-  position: absolute;
-  bottom: 10px;
-  right: 5px;
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-}
-
-.status-dot.online {
-  background-color: #43b581;
-}
-
-.status-dot.offline {
-  background-color: #747f8d;
-}
-
-.status-dot.custom {
-  background-color: #f04747;
+  margin: 4px 0;
+  width: 100%; /* Make each field's value span the container width */
 }
 
 /* Password and Authentication Section */
 .password-auth-section {
-  margin-top: 30px;
+  width: 100%;
+  max-width: 800px; /* Match the banner width */
+  margin: 30px auto 0; /* Add some space at the top */
 }
 
 .auth-btn {
   display: block;
-  width: 100%;
+  width: 100%; /* Make the button match the container width */
   padding: 10px;
   margin-bottom: 10px;
   background-color: #7289da;
@@ -223,19 +144,25 @@ body, html {
 
 /* Account Removal Section */
 .account-removal {
-  margin-top: 20px;
+  width: 100%;
+  max-width: 800px; /* Match the banner width */
+  margin: 20px auto 0; /* Add some space at the top */
   display: flex;
-  justify-content: space-between;
+  gap: 10px;
 }
 
-.disable-btn {
-  background-color: #f04747;
-  color: white;
+.disable-btn, .delete-btn {
+  flex: 1;
   padding: 10px;
+  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s;
+}
+
+.disable-btn {
+  background-color: #f04747;
 }
 
 .disable-btn:hover {
@@ -244,72 +171,83 @@ body, html {
 
 .delete-btn {
   background-color: #ff4c4c;
-  color: white;
-  padding: 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.3s;
 }
 
 .delete-btn:hover {
   background-color: #e60000;
 }
 
-
 /* Style for the Close (X) button with text */
 .close-btn-container {
-  position: fixed;
+  position: absolute;
   top: 20px;
   right: 20px;
   display: flex;
   align-items: center;
   gap: 8px;
-  z-index: 1000;
   cursor: pointer;
   transition: transform 0.3s, background-color 0.3s;
 }
 
-.close-btn-circle {
-  width: 36px;
-  height: 36px;
-  background-color: rgba(255, 255, 255, 0.1); /* Transparent circle */
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s;
-}
+/* Responsive Adjustments */
+@media screen and (max-width: 768px) {
+  .profile-banner {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
 
-.close-btn-circle:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
+  .banner-image {
+    height: 150px;
+  }
 
-.close-btn-text {
-  font-size: 16px;
-  color: #fff;
-  transition: color 0.3s;
-}
+  .profile-avatar {
+    width: 100px;
+    height: 100px;
+    top: 10px;
+    margin-top: 10px;
+  }
 
-.close-btn-container:hover .close-btn-text {
-  color: #f04747; /* Color when hovered */
-}
+  .profile-avatar .avatar-img {
+    width: 100px;
+    height: 100px;
+  }
 
-.close-btn-container:hover .close-btn-circle {
-  color: #f04747; /* Change cross color when hovered */
-}
+  .profile-details-container {
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    padding: 0;
+  }
 
-/* Floating effect for the close button */
-.close-btn-container {
-  transition: transform 0.3s;
-}
+  .profile-details h3 {
+    font-size: 20px;
+    padding-bottom: 5px;
+  }
 
-body.scrolled-down .close-btn-container {
-  top: 20px;
-  transform: translateY(0);
-}
+  .edit-buttons {
+    width: 100%;
+    align-items: center;
+  }
 
-body.scrolled-up .close-btn-container {
-  top: 0;
-  transform: translateY(10px);
+  .account-info-page {
+    padding: 0 10px;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .user-info .info-section {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .info-section strong {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+
+  .info-section p {
+    width: 100%;
+    padding-left: 0;
+  }
 }

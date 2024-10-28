@@ -6,7 +6,7 @@ import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth
 import { getDocs, collection, query, where, doc, getDoc, setDoc } from 'firebase/firestore';
 import './../styles/Login.css';
 
-const Login = ({ setUser }) => {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -46,8 +46,7 @@ const Login = ({ setUser }) => {
         const user = userCredential.user;
 
         if (user.emailVerified) {
-            setUser(user)
-            navigate('/'); // Redirect to profile page after successful login
+          navigate('/profile'); // Redirect to profile page after successful login
         } else {
           setError('Please verify your email before logging in.');
           setShowResend(true);
