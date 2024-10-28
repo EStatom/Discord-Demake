@@ -21,28 +21,24 @@ function App() {
     const [user, setUser] = useState(null);  
     const [userData, setUserData] = useState(null);
 
-    const hardcodedUserId = 'wgb7YJv1bGQUVn6z48tIzjGyHBF2';
-
+    const navigate = useNavigate();
+    const location = useLocation();
+    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/profileedit'].includes(location.pathname);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
+        const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+            setUser(currentUser || null);
             if (currentUser) {
-                fetchUserData(currentUser.uid).then((data) => {
-                    console.log("Fetched user data:", data);  // Debugging log
-                    setUserData(data);  // Ensures userData is set properly
-                });
+                const data = await fetchUserData(currentUser.uid);
+                setUserData(data);
             } else {
-                setUserData(null);  // Reset userData if no currentUser
+                setUser(null);
+                setUserData(null);
             }
         });
         return unsubscribe;
     }, []);
-
-    // Use this to help or url processing, its an extension of our Routing System
-    const navigate = useNavigate();
-    const location = useLocation();
-
+    
     const fetchServerDetails = async (serverId) => {
         // First lets make sure the serverId is not null or undefined
         if(serverId) {
@@ -75,43 +71,45 @@ function App() {
         navigate(`/server/${serverId}/channel/${channelId}`);
     }
 
-    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/profileedit'].includes(location.pathname);
-
     return (
         <div style={{ display: 'flex', flexDirection: 'row', width: '100vw', height: '100vh' }}>
-            {!user ? (
-                <Routes>
-                    <Route path="/login" element={<Login setUser={setUser} />} />
-                    <Route path="/signup" element={<SignUp />} />
-                    <Route path="/forgotpassword" element={<ForgotPassword />} />
-                    <Route path="*" element={<Navigate to="/login" replace />} />
-                </Routes>
-            ) : (
-                <>
-                    {/* Conditionally render sidebar and main components only on non-auth/profile routes */}
-                    {!isAuthOrProfileRoute && <Sidebar onSelectServer={handleSelectedServer} />}
-                    {!isAuthOrProfileRoute && serverDetails && (
-                        <ChannelList 
-                            serverDetails={serverDetails} 
-                            onSelectChannel={handleSelectedChannel} 
-                            userId={user?.uid}
-                            userData={userData}
-                        />
-                    )}
-                    {!isAuthOrProfileRoute && selectedChannel && serverDetails && (
-                        <ChatApp 
-                            serverDetails={serverDetails} 
-                            selectedChannelId={selectedChannel} 
-                            userData={userData}
-                        />
-                    )}
-                    <Routes>
+            {/* Conditionally Render Sidebar and Main Components */}
+            {user && !isAuthOrProfileRoute && <Sidebar onSelectServer={handleSelectedServer} />}
+            {user && !isAuthOrProfileRoute && serverDetails && (
+                <ChannelList 
+                    serverDetails={serverDetails} 
+                    onSelectChannel={handleSelectedChannel} 
+                    userId={user?.uid}
+                    userData={userData}
+                />
+            )}
+            {user && !isAuthOrProfileRoute && selectedChannel && serverDetails && (
+                <ChatApp 
+                    serverDetails={serverDetails} 
+                    selectedChannelId={selectedChannel} 
+                    userData={userData}
+                />
+            )}
+
+            {/* Route Definitions */}
+            <Routes>
+                {/* Public Routes */}
+                <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />} />
+                <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
+                <Route path="/forgotpassword" element={!user ? <ForgotPassword /> : <Navigate to="/" replace />} />
+
+                {/* Authenticated Routes */}
+                {user ? (
+                    <>
                         <Route path="/" element={<Landing />} />
                         <Route path="/accountinfo" element={<AccountInfo />} />
                         <Route path="/profileedit" element={<ProfileEdit />} />
-                    </Routes>
-                </>
-            )}
+                    </>
+                ) : (
+                    // Redirect to login if not authenticated
+                    <Route path="*" element={<Navigate to="/login" replace />} />
+                )}
+            </Routes>
         </div>
     );
 }
