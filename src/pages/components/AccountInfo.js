@@ -1,12 +1,13 @@
 // src/components/AccountInfo.js
 import React, { useEffect, useState } from 'react';
-import { auth, db } from './../../firebase'; // Ensure Firebase is properly configured
+import { auth, db, storage } from './../../firebase'; // Ensure Firebase is properly configured
 import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
+import { getDownloadURL, ref } from 'firebase/storage'; // Import storage functions
 import './../styles/account-info.css';
 import defaultBannerImage from './../images/image-1.jpg'; // Import your default banner image
-import defaultAvatarImage from './../images/image-6.png'; // Import your default avatar image
+import defaultAvatarImage from './../images/image-default.jpg'; // Import your default avatar image
 
 const AccountInfo = () => {
   const [profileData, setProfileData] = useState(null);
@@ -25,12 +26,32 @@ const AccountInfo = () => {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setProfileData(docSnap.data());
+          const joinedDate = new Date(user.metadata.creationTime).toLocaleDateString();
+
+          // Fetch profile picture and banner URLs from Firebase Storage
+          const avatarUrl = await getImageUrl(`users/${user.uid}/avatar`, defaultAvatarImage);
+          const bannerUrl = await getImageUrl(`users/${user.uid}/banner`, defaultBannerImage);
+
+          setProfileData({
+            ...docSnap.data(),
+            joinedDate,
+            avatar: avatarUrl,
+            banner: bannerUrl,
+          });
         }
       }
     };
     fetchProfileData();
   }, []);
+
+  const getImageUrl = async (storagePath, defaultImage) => {
+    try {
+      const url = await getDownloadURL(ref(storage, storagePath));
+      return url;
+    } catch (error) {
+      return defaultImage;
+    }
+  };
 
   if (!profileData) {
     return <p>Loading...</p>;
@@ -38,7 +59,7 @@ const AccountInfo = () => {
 
   // Navigate to profile edit page
   const handleEditProfileClick = () => {
-    navigate('/profile-edit');
+    navigate('/profileedit');
   };
 
   const handleMainPage = () => {
@@ -131,37 +152,47 @@ const AccountInfo = () => {
         <>
           {/* Banner and Profile Picture */}
           <div className="profile-banner">
-            <div className="banner-image">
-              <img
-                src={profileData.banner || defaultBannerImage}
-                alt="Account Banner"
-                className="banner-img"
-              />
-            </div>
+          <div className="banner-image">
+            <img
+              src={profileData.banner || defaultBannerImage}
+              alt="Account Banner"
+              className="banner-img"
+            />
+          </div>
+          <div className="profile-details-container">
+            <h3>{profileData.displayName}</h3>
             <div className="profile-avatar">
               <img
-                src={profileData.profilePicture || defaultAvatarImage}
+                src={profileData.avatar || defaultAvatarImage}
                 alt="Profile Avatar"
                 className="avatar-img"
               />
             </div>
-            <div className="profile-details">
-              <h3>{profileData.displayName}</h3>
-              <button className="edit-profile-btn" onClick={handleEditProfileClick}>
-                Edit User Profile
-              </button>
-            </div>
+            <button className="edit-profile-btn" onClick={handleEditProfileClick}>
+              Edit User Profile
+            </button>
           </div>
+        </div>
+
 
           {/* Display other account information options */}
           <div className="user-info">
-            {['Display Name', 'Username', 'Email', 'Phone Number'].map((label, index) => (
-              <div className="info-section" key={index}>
-                <p><strong>{label}</strong></p>
-                <p>{profileData[label.toLowerCase().replace(' ', '')]}</p>
-                <button className="edit-btn" onClick={handleEditProfileClick}>Edit</button>
-              </div>
-            ))}
+            <div className="info-section">
+              <p><strong>Display Name</strong></p>
+              <p>{profileData.displayName}</p>
+            </div>
+            <div className="info-section">
+              <p><strong>Username</strong></p>
+              <p>{profileData.username}</p>
+            </div>
+            <div className="info-section">
+              <p><strong>Email</strong></p>
+              <p>{profileData.email}</p>
+            </div>
+            <div className="info-section">
+              <p><strong>Phone Number</strong></p>
+              <p>{profileData.phoneNumber}</p>
+            </div>
             <div className="info-section">
               <p><strong>Joined Date</strong></p>
               <p>{profileData.joinedDate}</p>
