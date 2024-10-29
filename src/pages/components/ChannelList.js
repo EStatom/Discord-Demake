@@ -42,7 +42,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
 
     const handleEditProfile = () => {
         setIsLogoutMenuOpen(false); 
-        navigate("/profileedit"); 
+        navigate("/accountinfo"); 
     };
 
     const handleSelectChannel = (channelId) => {
@@ -127,7 +127,8 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
             {/* Logout Menu */}
             {isLogoutMenuOpen && (
                     <div className="logout-menu">
-                        <button onClick={handleEditProfile} className="edit-profile-button">Edit Profile</button>
+                        {/* <button onClick={handleEditProfile} className="edit-profile-button">Edit Profile</button> */}
+                        <button onClick={handleEditProfile} className="edit-profile-button">Account Info</button>
                         <button onClick={handleLogout} className="logout-button">Log Out</button>
                     </div>
                 )}

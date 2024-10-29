@@ -105,7 +105,7 @@ const SignUp = () => {
   };
 
   const handleOkClick = () => {
-    navigate('/');
+    navigate('/login');
   };
 
   return (
