@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './../../firebase';
 import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { getDocs, collection, query, where, doc, getDoc, setDoc } from 'firebase/firestore';
+import { getDocs, collection, query, where, doc, getDoc } from 'firebase/firestore';
 import './../styles/Login.css';
 
 const Login = () => {
@@ -25,31 +25,16 @@ const Login = () => {
         const userDoc = querySnapshot.docs[0];
         const email = userDoc.data().email;
 
-        // Check if the account is disabled
-        const docRef = doc(db, 'users', userDoc.id);
-        const userData = await getDoc(docRef);
-        if (userData.exists() && userData.data().isDisabled) {
-          const confirmEnable = window.confirm(
-            'This account is currently disabled. Do you want to re-enable it and log in?'
-          );
-
-          if (!confirmEnable) {
-            return; // Do not proceed with login if user doesn't want to enable
-          }
-
-          // Re-enable the account in Firestore
-          await setDoc(docRef, { isDisabled: false }, { merge: true });
-        }
-
-        // Proceed with the login
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        await user.reload();  // Force reload of the user's auth state
+
         if (user.emailVerified) {
-          navigate('/profile'); // Redirect to profile page after successful login
+          navigate('/profile');  // Navigate to profile page if email is verified
         } else {
           setError('Please verify your email before logging in.');
-          setShowResend(true);
+          setShowResend(true);  // Show option to resend verification email
         }
       } else {
         setError('Username not found.');
@@ -67,7 +52,7 @@ const Login = () => {
         alert('Verification email sent! Please check your inbox.');
       } else {
         alert('No authenticated user found. Please log in again.');
-        navigate('/'); // Redirect to login if no user is authenticated
+        navigate('/login');  // Redirect to login if no user is authenticated
       }
     } catch (error) {
       alert(`Error resending verification email: ${error.message}`);

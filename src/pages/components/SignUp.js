@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './../../firebase';
-import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
+import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import './../styles/SignUp.css';
 
@@ -70,16 +70,16 @@ const SignUp = () => {
 
   const handleSignUp = async (e) => {
     e.preventDefault();
-    try {
-      if (isUsernameAvailable === false) {
-        setError('Username is already taken. Please choose another one.');
-        return;
-      }
-      if (isEmailAvailable === false) {
-        setError('Email is already in use. Please use another email.');
-        return;
-      }
+    if (isUsernameAvailable === false) {
+      setError('Username is already taken. Please choose another one.');
+      return;
+    }
+    if (isEmailAvailable === false) {
+      setError('Email is already in use. Please use another email.');
+      return;
+    }
 
+    try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
@@ -93,14 +93,10 @@ const SignUp = () => {
       });
 
       await sendEmailVerification(user);
+      await signOut(auth);  // Ensure the user is signed out after registration
       setIsSignUpSuccessful(true);
     } catch (error) {
-      if (error.code === 'auth/email-already-in-use') {
-        setError('Email is already in use. Please use another email.');
-        setIsEmailAvailable(false);
-      } else {
-        setError(error.message);
-      }
+      setError('Failed to sign up: ' + error.message);
     }
   };
 
@@ -160,7 +156,7 @@ const SignUp = () => {
             {isUsernameAvailable === false && (
               <p className="error-message">Username is already taken. Please choose another one.</p>
             )}
-            {isUsernameAvailable === true && (
+            {isUsernameAvailable && (
               <p className="success-message">Username is available.</p>
             )}
 
@@ -176,7 +172,7 @@ const SignUp = () => {
             {isEmailAvailable === false && (
               <p className="error-message">Email is already in use. Please use another email.</p>
             )}
-            {isEmailAvailable === true && email.trim() !== '' && (
+            {isEmailAvailable && email.trim() !== '' && (
               <p className="success-message">Email is available.</p>
             )}
 
