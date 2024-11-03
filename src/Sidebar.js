@@ -211,6 +211,30 @@ useEffect(() => {
       e.preventDefault(); //turns off standard right click menu
     }}
     >
+     <div
+      style={
+        hoveredIndex === 'a'
+        ? sidebarStyles.iconContainerHover
+        : activeIndex === 'a'
+        ? sidebarStyles.iconContainerActive
+        : sidebarStyles.iconContainer
+        }  
+        onClick={() => handleServerClick('a', 'GeoServer')}  //registers as clicked
+        onMouseEnter={() => setHoveredIndex('a')}  //registers as hovered
+        onMouseLeave={() => setHoveredIndex(null)}
+    >
+      <img
+        src='https://unsplash.it/600/400?image=47'
+        style={
+          hoveredIndex === 'a' 
+          ? sidebarStyles.serverIconHover
+          : activeIndex === 'a'
+          ? sidebarStyles.serverIconHover
+          : sidebarStyles.serverIcon}  //changes sytle of the icon to match the container.  We can do something similar with active if we want to match discord more closely
+          alt={'Geo'}
+          />
+      
+    </div> 
       {servers.map((server, index) => (
         <div
           key={server.id}
