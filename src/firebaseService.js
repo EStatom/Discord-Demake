@@ -1,7 +1,8 @@
 import { collection, getDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { addDoc, query, orderBy, onSnapshot, updateDoc } from 'firebase/firestore';
+import { addDoc, query, orderBy, onSnapshot, updateDoc, GeoPoint } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from './firebase';
+import { geoFirestore } from './firebase';
 
 const fetchChannels = async (serverId) => {
     try {
@@ -77,7 +78,7 @@ const deleteChannelFromServer = async (serverId, channelId) => {
 export { deleteChannelFromServer };
 
 // Function to send a message to Firestore (handles text messages and files)
-export const sendMessageToFirebase = async (message, fileURL, serverId, channelId, userId) => {
+export const sendMessageToFirebase = async (message, fileURL, serverId, channelId, userId, location) => {
     if (!message && !fileURL) {
       console.error("Message or file must be provided.");
       return;
@@ -91,6 +92,7 @@ export const sendMessageToFirebase = async (message, fileURL, serverId, channelI
             content: message || "", // Save empty string if no message but there is a file
             fileURL: fileURL || null, // Save file URL if any
             timestamp: new Date().toISOString(), // Save current timestamp
+            coordinates: location ? new GeoPoint(location.latitude, location.longitude) : null,
         });
         console.log('Message sent to Firebase with ID:', docRef.id);
     } catch (error) {

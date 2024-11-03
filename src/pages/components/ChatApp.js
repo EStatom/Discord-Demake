@@ -194,12 +194,24 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
     }
 
     if (message.trim() !== '' || fileURL) {
-      console.log('Sending message with content:', message);
-      console.log('Sending file URL:', fileURL, selectedServerId, selectedChannelId); 
-      await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username); // to send message and fileURL to Firebase
-      setMessage(''); // to clear message after sending
-    }
-  };
+        // Get user’s geolocation
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+  
+          await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username, location);
+          setMessage(''); // Clear message after sending
+        }, 
+        async (error) => {
+          console.error("Geolocation error:", error);
+          // Send message without location if geolocation fails
+          await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username, null);
+          setMessage(''); 
+        });
+      }
+    };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
