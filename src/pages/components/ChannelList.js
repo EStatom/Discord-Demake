@@ -42,7 +42,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
 
     const handleEditProfile = () => {
         setIsLogoutMenuOpen(false); 
-        navigate("/profileedit"); 
+        navigate("/accountinfo"); 
     };
 
     const handleSelectChannel = (channelId) => {
@@ -112,7 +112,8 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
             <div className="user-profile-section">
                 <div className="user-info">
                     <img 
-                        src={userData?.profilePicture || 'https://via.placeholder.com/40'}  // Use placeholder if no image
+                        // src={userData?.profilePicture || 'https://via.placeholder.com/40'}  // Use placeholder if no image
+                        src={userData?.avatar || 'https://via.placeholder.com/40'}  // Use placeholder if no image
                         alt="User Avatar"
                         className="user-avatar"
                     />
@@ -127,7 +128,8 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
             {/* Logout Menu */}
             {isLogoutMenuOpen && (
                     <div className="logout-menu">
-                        <button onClick={handleEditProfile} className="edit-profile-button">Edit Profile</button>
+                        {/* <button onClick={handleEditProfile} className="edit-profile-button">Edit Profile</button> */}
+                        <button onClick={handleEditProfile} className="edit-profile-button">Account Info</button>
                         <button onClick={handleLogout} className="logout-button">Log Out</button>
                     </div>
                 )}

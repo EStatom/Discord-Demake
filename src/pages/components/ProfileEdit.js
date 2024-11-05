@@ -1,25 +1,66 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auth, db } from './../../firebase'; // Firebase import
-import { doc, setDoc } from 'firebase/firestore';
-import './../styles/profile-edit.css';
+// src/components/ProfileEdit.js
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { auth, db, storage } from './../../firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import styles from './../styles/ProfileEdit.module.css'; // Import CSS Module
+import defaultProfileImage from './../images/image-default.jpg';
+const editBannerImage = './images/default-banner.jpg';
 
-// Provide a default profile image and banner image
-const defaultProfileImage = './images/default-avatar.png'; // Change this to the path of your default profile image
-const editBannerImage = './images/default-banner.jpg'; // Change this to the path of your default banner image
+const ProfileEdit = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Receive the profile data passed from AccountInfo
+  const initialProfileData = location.state?.profileData || {}; 
 
-const ProfileEdit = ({ profileData = {} }) => { // Provide a default value for profileData
   const [localProfileData, setLocalProfileData] = useState({
-    displayName: profileData.displayName || '', // Provide default value if undefined
-    username: profileData.username || '',
-    email: profileData.email || '',
-    phoneNumber: profileData.phoneNumber || '',
-    pronouns: profileData.pronouns || '',
-    avatar: profileData.avatar || defaultProfileImage,
-    banner: profileData.banner || editBannerImage,
+    displayName: initialProfileData.displayName || '',
+    username: initialProfileData.username || '',
+    email: initialProfileData.email || '',
+    phoneNumber: initialProfileData.phoneNumber || '',
+    pronouns: initialProfileData.pronouns || '',
+    avatar: initialProfileData.avatar || defaultProfileImage,
+    banner: initialProfileData.banner || editBannerImage,
   });
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    // Fetch latest data from Firestore to ensure the data is up-to-date
+    const fetchProfileData = async () => {
+      const user = auth.currentUser;
+      if (user) {
+        const docRef = doc(db, 'users', user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const profileData = docSnap.data();
+          const avatarUrl = await getImageUrl(`users/${user.uid}/avatar`, defaultProfileImage);
+          const bannerUrl = await getImageUrl(`users/${user.uid}/banner`, editBannerImage);
+
+          setLocalProfileData({
+            displayName: profileData.displayName || '',
+            username: profileData.username || '',
+            email: profileData.email || '',
+            phoneNumber: profileData.phoneNumber || '',
+            pronouns: profileData.pronouns || '',
+            avatar: avatarUrl,
+            banner: bannerUrl,
+          });
+        }
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
+  const getImageUrl = async (storagePath, defaultImage) => {
+    try {
+      const url = await getDownloadURL(ref(storage, storagePath));
+      return url;
+    } catch (error) {
+      return defaultImage;
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,22 +70,54 @@ const ProfileEdit = ({ profileData = {} }) => { // Provide a default value for p
     });
   };
 
-  const handleProfilePicChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setLocalProfileData({
-        ...localProfileData,
-        avatar: imageUrl,  // Update the avatar with the new image
-      });
+  const uploadImageToStorage = async (file, type) => {
+    try {
+      const storageRef = ref(storage, `users/${auth.currentUser.uid}/${type}`);
+      await uploadBytes(storageRef, file);
+      return await getDownloadURL(storageRef);
+    } catch (error) {
+      console.error("Error uploading image: ", error);
+      return null;
     }
   };
 
-  const handleRemoveProfilePic = () => {
-    setLocalProfileData({
-      ...localProfileData,
-      avatar: defaultProfileImage,  // Revert to default if removed
-    });
+  const handleProfilePicChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = await uploadImageToStorage(file, 'avatar');
+      if (imageUrl) {
+        setLocalProfileData({
+          ...localProfileData,
+          avatar: imageUrl,
+        });
+      }
+    }
+  };
+
+  const handleBannerChange = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const bannerUrl = await uploadImageToStorage(file, 'banner');
+      if (bannerUrl) {
+        setLocalProfileData({
+          ...localProfileData,
+          banner: bannerUrl,
+        });
+      }
+    }
+  };
+
+  const handleRemoveProfilePic = async () => {
+    try {
+      const storageRef = ref(storage, `users/${auth.currentUser.uid}/avatar`);
+      await deleteObject(storageRef);
+      setLocalProfileData({
+        ...localProfileData,
+        avatar: defaultProfileImage,
+      });
+    } catch (error) {
+      console.error("Error removing profile picture: ", error);
+    }
   };
 
   const handleSave = async () => {
@@ -52,9 +125,9 @@ const ProfileEdit = ({ profileData = {} }) => { // Provide a default value for p
       const user = auth.currentUser;
       if (user) {
         const userRef = doc(db, 'users', user.uid);
-        await setDoc(userRef, localProfileData, { merge: true }); // Save changes to Firestore
+        await setDoc(userRef, localProfileData, { merge: true });
         alert('Changes saved!');
-        navigate('/account-info');  // Go back to AccountInfo after saving
+        navigate('/accountinfo');
       }
     } catch (error) {
       alert('Error saving changes: ' + error.message);
@@ -64,28 +137,28 @@ const ProfileEdit = ({ profileData = {} }) => { // Provide a default value for p
   const handleCancel = () => {
     const confirmCancel = window.confirm('Are you sure you want to cancel your changes?');
     if (confirmCancel) {
-      navigate('/account-info'); // Go back to AccountInfo without saving
+      navigate('/accountinfo');
     }
   };
 
   return (
-    <div className="profile-edit-page">
+    <div className={styles.profileEditPage}>
       <h2>Edit Profile</h2>
-      <div className="profile-banner">
-        <div className="banner-image">
+      <div className={styles.profileBanner}>
+        <div className={styles.bannerImage}>
           <img
-            src={localProfileData.banner || editBannerImage} // Use default if banner is not available
+            src={localProfileData.banner || editBannerImage}
             alt="Edit Profile Banner"
-            className="banner-img"
+            className={styles.bannerImg}
           />
         </div>
-        <div className="profile-avatar">
+        <div className={styles.profileAvatar}>
           <img
-            src={localProfileData.avatar || defaultProfileImage} // Use default if avatar is not available
+            src={localProfileData.avatar || defaultProfileImage}
             alt="Profile Avatar"
           />
         </div>
-        <div className="profile-details">
+        <div className={styles.profileDetails}>
           <h3>{localProfileData.displayName}</h3>
           <input
             type="file"
@@ -93,19 +166,25 @@ const ProfileEdit = ({ profileData = {} }) => { // Provide a default value for p
             style={{ display: 'none' }}
             onChange={handleProfilePicChange}
           />
-          <button
-            className="edit-profile-btn"
-            onClick={() => document.getElementById('profilePicUpload').click()}
-          >
+          <input
+            type="file"
+            id="bannerUpload"
+            style={{ display: 'none' }}
+            onChange={handleBannerChange}
+          />
+          <button className={styles.editProfileBtn} onClick={() => document.getElementById('profilePicUpload').click()}>
             Change Picture
           </button>
-          <button className="edit-profile-btn" onClick={handleRemoveProfilePic}>
+          <button className={styles.editProfileBtn} onClick={handleRemoveProfilePic}>
             Remove Picture
+          </button>
+          <button className={styles.editProfileBtn} onClick={() => document.getElementById('bannerUpload').click()}>
+            Change Banner
           </button>
         </div>
       </div>
 
-      <div className="profile-edit-section">
+      <div className={styles.profileEditSection}>
         <label>Display Name</label>
         <input
           type="text"
@@ -143,9 +222,9 @@ const ProfileEdit = ({ profileData = {} }) => { // Provide a default value for p
           placeholder="Add your pronouns"
         />
 
-        <div className="profile-actions">
-          <button className="save-btn" onClick={handleSave}>Save Changes</button>
-          <button className="cancel-btn" onClick={handleCancel}>Cancel</button> {/* Cancel Button */}
+        <div className={styles.profileActions}>
+          <button className={styles.saveBtn} onClick={handleSave}>Save Changes</button>
+          <button className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
         </div>
       </div>
     </div>

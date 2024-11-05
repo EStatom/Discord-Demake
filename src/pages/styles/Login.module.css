@@ -1,61 +1,55 @@
-src/styles/Login.css
-body, html {
+/* src/styles/Login.module.css */
+
+/* body, html {
   height: 100%;
   margin: 0;
   font-family: 'Helvetica', 'Arial', sans-serif;
-}
+} */
 
-.login-page {
-  background-image: url('./../images//image-2.jpg');
+.loginPage {
+  background-image: url('./../images/image-2.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
   background-color: #36393f; /* Discord dark background */
 }
 
-/* .login-page {
-  background-image: url('./../images//image-2.jpg');
-  background-size: cover;
-  background-position: center;
-} */
-
-
-.login-container {
+.loginContainer {
   background-color: #2f3136; /* Dark card background */
   padding: 40px;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-  max-width: 24rem;
+  width: 400px;
   text-align: center;
 }
 
-.login-container h2 {
+h2 {
   color: #ffffff;
   font-size: 24px;
   margin-bottom: 10px;
 }
 
-.login-container p {
+p {
   color: #b9bbbe;
   margin-bottom: 20px;
 }
 
-.login-container form {
+form {
   display: flex;
   flex-direction: column;
 }
 
-.login-container label {
+label {
   color: #b9bbbe;
   text-align: left;
   margin-bottom: 5px;
 }
 
-.login-container input {
+input {
   padding: 10px;
   margin-bottom: 15px;
   border: none;
@@ -64,15 +58,14 @@ body, html {
   color: white;
 }
 
-.login-container input:focus {
+input:focus {
   outline: none;
   border: 1px solid #7289da;
 }
 
-/* Replace button with .login-container button */
-.login-container button {
+.loginButton {
   padding: 10px;
-  background-color: #5865f2;
+  background-color: #5865f2; /* Discord button color */
   color: white;
   font-weight: bold;
   border: none;
@@ -81,44 +74,43 @@ body, html {
   transition: background-color 0.3s;
 }
 
-.login-container button:hover {
-  background-color: #4752c4;
+.loginButton:hover {
+  background-color: #4752c4; /* Darker button hover color */
 }
 
-
-.extra-options {
+.extraOptions {
   display: flex;
   justify-content: space-between;
   margin-top: 15px;
 }
 
-.extra-options button {
+.extraOptionButton {
   background: none;
   color: #7289da;
   border: none;
   cursor: pointer;
 }
 
-.extra-options button:hover {
+.extraOptionButton:hover {
   text-decoration: underline;
 }
 
-  
-  button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
-  .extra-options {
-    display: flex;
-    justify-content: space-between;
-  }
-  
+.errorMessage {
+  color: #f04747;
+  margin-top: 10px;
+}
+
+.resendVerification {
+  margin-top: 20px;
+}
+
+.resendButton {
+  background: none;
+  color: #7289da;
+  border: none;
+  cursor: pointer;
+}
+
+.resendButton:hover {
+  text-decoration: underline;
+}

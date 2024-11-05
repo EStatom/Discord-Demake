@@ -1,12 +1,13 @@
 // src/components/AccountInfo.js
 import React, { useEffect, useState } from 'react';
-import { auth, db } from './../../firebase'; // Ensure Firebase is properly configured
+import { auth, db, storage } from './../../firebase'; // Ensure Firebase is properly configured
 import { doc, getDoc, deleteDoc, updateDoc } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { updatePassword, deleteUser, EmailAuthProvider, reauthenticateWithCredential } from 'firebase/auth';
-import './../styles/account-info.css';
+import { getDownloadURL, ref } from 'firebase/storage'; // Import storage functions
+import styles from './../styles/AccountInfo.module.css'; // Import CSS Module
 import defaultBannerImage from './../images/image-1.jpg'; // Import your default banner image
-import defaultAvatarImage from './../images/image-6.png'; // Import your default avatar image
+import defaultAvatarImage from './../images/image-default.jpg'; // Import your default avatar image
 
 const AccountInfo = () => {
   const [profileData, setProfileData] = useState(null);
@@ -18,34 +19,48 @@ const AccountInfo = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch the profile data from Firebase
     const fetchProfileData = async () => {
       const user = auth.currentUser;
       if (user) {
         const docRef = doc(db, 'users', user.uid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          setProfileData(docSnap.data());
+          const joinedDate = new Date(user.metadata.creationTime).toLocaleDateString();
+          const avatarUrl = await getImageUrl(`users/${user.uid}/avatar`, defaultAvatarImage);
+          const bannerUrl = await getImageUrl(`users/${user.uid}/banner`, defaultBannerImage);
+          setProfileData({
+            ...docSnap.data(),
+            joinedDate,
+            avatar: avatarUrl,
+            banner: bannerUrl,
+          });
         }
       }
     };
     fetchProfileData();
   }, []);
 
+  const getImageUrl = async (storagePath, defaultImage) => {
+    try {
+      const url = await getDownloadURL(ref(storage, storagePath));
+      return url;
+    } catch (error) {
+      return defaultImage;
+    }
+  };
+
   if (!profileData) {
     return <p>Loading...</p>;
   }
 
-  // Navigate to profile edit page
   const handleEditProfileClick = () => {
-    navigate('/profile-edit');
+    navigate('/profileedit');
   };
 
   const handleMainPage = () => {
     navigate('/profile');
   };
 
-  // Function to handle disabling the account
   const handleDisableAccount = async () => {
     const confirmDisable = window.confirm(
       "Are you sure you want to disable your account? This will log you out."
@@ -54,15 +69,11 @@ const AccountInfo = () => {
       try {
         const user = auth.currentUser;
         if (user) {
-          // Get the Firestore document reference for the current user
           const docRef = doc(db, 'users', user.uid);
-
-          // Update the `isDisabled` field in the Firestore document to true
           await updateDoc(docRef, { isDisabled: true });
-
           alert("Account disabled. You will be logged out.");
-          await auth.signOut(); // Log the user out after disabling the account
-          navigate('/'); // Redirect to the login page after logging out
+          await auth.signOut();
+          navigate('/');
         }
       } catch (error) {
         alert(`Error disabling account: ${error.message}`);
@@ -70,7 +81,6 @@ const AccountInfo = () => {
     }
   };
 
-  // Function to handle deleting the account
   const handleDeleteAccount = async () => {
     const confirmDelete = window.confirm(
       "Are you sure you want to permanently delete your account? This action cannot be undone."
@@ -78,128 +88,120 @@ const AccountInfo = () => {
     if (confirmDelete) {
       try {
         const user = auth.currentUser;
-        // Delete user data from Firestore
         await deleteDoc(doc(db, 'users', user.uid));
-        // Delete user authentication record
         await deleteUser(user);
         alert("Account deleted.");
-        navigate('/'); // Redirect to homepage or login page
+        navigate('/');
       } catch (error) {
         alert("Error deleting account: " + error.message);
       }
     }
   };
 
-  // Function to handle changing the password with re-authentication
   const handleChangePassword = async () => {
     if (currentPassword && newPassword) {
       try {
         const user = auth.currentUser;
-
-        // Create a credential using the user's email and current password
         const credential = EmailAuthProvider.credential(user.email, currentPassword);
-
-        // Reauthenticate the user
         await reauthenticateWithCredential(user, credential);
-
-        // Update the user's password after successful re-authentication
         await updatePassword(user, newPassword);
-
         alert("Password changed successfully.");
-        // Reset the state after successful password change
         setShowChangePassword(false);
         setCurrentPassword('');
         setNewPassword('');
       } catch (error) {
-        // Handle errors such as incorrect current password, weak new password, etc.
         alert("Error changing password: " + error.message);
       }
     }
   };
 
   return (
-    <div className="account-info-page">
+    <div className={styles.accountInfoPage}>
       <h2>My Account</h2>
 
-      {/* Floating Close Button */}
-      <div className="close-btn-container" onClick={handleMainPage}>
-        <div className="close-btn-circle">✕</div>
-        <span className="close-btn-text">Close</span>
+      <div className={styles.closeBtnContainer} onClick={handleMainPage}>
+        <div className={styles.closeBtnCircle}>✕</div>
+        <span className={styles.closeBtnText}>Close</span>
       </div>
 
       {!showChangePassword ? (
         <>
-          {/* Banner and Profile Picture */}
-          <div className="profile-banner">
-            <div className="banner-image">
+          <div className={styles.profileBanner}>
+            <div className={styles.bannerImage}>
               <img
                 src={profileData.banner || defaultBannerImage}
                 alt="Account Banner"
-                className="banner-img"
+                className={styles.bannerImg}
               />
             </div>
-            <div className="profile-avatar">
-              <img
-                src={profileData.profilePicture || defaultAvatarImage}
-                alt="Profile Avatar"
-                className="avatar-img"
-              />
-            </div>
-            <div className="profile-details">
+            <div className={styles.profileDetailsContainer}>
               <h3>{profileData.displayName}</h3>
-              <button className="edit-profile-btn" onClick={handleEditProfileClick}>
+              <div className={styles.profileAvatar}>
+                <img
+                  src={profileData.avatar || defaultAvatarImage}
+                  alt="Profile Avatar"
+                  className={styles.avatarImg}
+                />
+              </div>
+              <button className={styles.editProfileBtn} onClick={handleEditProfileClick}>
                 Edit User Profile
               </button>
             </div>
           </div>
 
-          {/* Display other account information options */}
-          <div className="user-info">
-            {['Display Name', 'Username', 'Email', 'Phone Number'].map((label, index) => (
-              <div className="info-section" key={index}>
-                <p><strong>{label}</strong></p>
-                <p>{profileData[label.toLowerCase().replace(' ', '')]}</p>
-                <button className="edit-btn" onClick={handleEditProfileClick}>Edit</button>
-              </div>
-            ))}
-            <div className="info-section">
+          <div className={styles.userInfo}>
+            <div className={styles.infoSection}>
+              <p><strong>Display Name</strong></p>
+              <p>{profileData.displayName}</p>
+            </div>
+            <div className={styles.infoSection}>
+              <p><strong>Username</strong></p>
+              <p>{profileData.username}</p>
+            </div>
+            <div className={styles.infoSection}>
+              <p><strong>Email</strong></p>
+              <p>{profileData.email}</p>
+            </div>
+            <div className={styles.infoSection}>
+              <p><strong>Phone Number</strong></p>
+              <p>{profileData.phoneNumber}</p>
+            </div>
+            <div className={styles.infoSection}>
               <p><strong>Joined Date</strong></p>
               <p>{profileData.joinedDate}</p>
             </div>
           </div>
 
-          {/* Password and Authentication Section */}
-          <div className="password-auth-section">
+          <div className={styles.passwordAuthSection}>
             <h2>Password and Authentication</h2>
-            <button className="auth-btn" onClick={() => setShowChangePassword(true)}>
+            <button className={styles.authBtn} onClick={() => setShowChangePassword(true)}>
               Change Password
             </button>
           </div>
 
-          {/* Account Removal Section */}
-          <div className="account-removal">
-            <button className="disable-btn" onClick={handleDisableAccount}>
+          <div className={styles.accountRemoval}>
+            <button className={styles.disableBtn} onClick={handleDisableAccount}>
               Disable Account
             </button>
-            <button className="delete-btn" onClick={handleDeleteAccount}>
+            <button className={styles.deleteBtn} onClick={handleDeleteAccount}>
               Delete Account
             </button>
           </div>
         </>
       ) : (
-        <div className="password-auth-section">
+        <div className={styles.passwordAuthSection}>
           <h2>Change Password</h2>
-          <div className="password-inputs">
+          <div className={styles.passwordInputs}>
             <div>
               <label>Current Password:</label>
-              <div className="password-field">
+              <div className={styles.passwordField}>
                 <input
                   type={currentPasswordVisible ? "text" : "password"}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                 />
                 <span
-                  className="toggle-visibility"
+                  className={styles.toggleVisibility}
                   onClick={() => setCurrentPasswordVisible(!currentPasswordVisible)}
                 >
                   {currentPasswordVisible ? "🙈" : "👁️"}
@@ -208,14 +210,14 @@ const AccountInfo = () => {
             </div>
             <div>
               <label>New Password:</label>
-              <div className="password-field">
+              <div className={styles.passwordField}>
                 <input
                   type={newPasswordVisible ? "text" : "password"}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                 />
                 <span
-                  className="toggle-visibility"
+                  className={styles.toggleVisibility}
                   onClick={() => setNewPasswordVisible(!newPasswordVisible)}
                 >
                   {newPasswordVisible ? "🙈" : "👁️"}
@@ -223,8 +225,8 @@ const AccountInfo = () => {
               </div>
             </div>
           </div>
-          <button className="auth-btn" onClick={handleChangePassword}>Confirm Change</button>
-          <button className="cancel-btn" onClick={() => setShowChangePassword(false)}>Cancel</button>
+          <button className={styles.authBtn} onClick={handleChangePassword}>Confirm Change</button>
+          <button className={styles.cancelBtn} onClick={() => setShowChangePassword(false)}>Cancel</button>
         </div>
       )}
     </div>
