@@ -94,10 +94,10 @@ function App() {
             {/* Route Definitions */}
             <Routes>
                 {/* Public Routes */}
-                {/* <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />} /> */}
-                <Route path="/login" element={<Login />} />
-                {/* <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} /> */}
-                <Route path="/signup" element={<SignUp />} />
+                <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />} />
+                {/* <Route path="/login" element={<Login />} /> */}
+                <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
+                {/* <Route path="/signup" element={<SignUp />} /> */}
                 <Route path="/forgotpassword" element={!user ? <ForgotPassword /> : <Navigate to="/" replace />} />
 
                 {/* Authenticated Routes */}
