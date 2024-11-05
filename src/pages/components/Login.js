@@ -3,8 +3,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './../../firebase';
 import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { getDocs, collection, query, where, doc, getDoc } from 'firebase/firestore';
-import './../styles/Login.css';
+import { getDocs, collection, query, where } from 'firebase/firestore';
+import styles from './../styles/Login.module.css'; // Import CSS Module
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -60,8 +60,8 @@ const Login = () => {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-container">
+    <div className={styles.loginPage}>
+      <div className={styles.loginContainer}>
         <h2>Welcome back!</h2>
         <p>We're so excited to see you again!</p>
 
@@ -86,22 +86,24 @@ const Login = () => {
             required
           />
 
-          <button type="submit">Sign In</button>
-          {error && <p className="error-message">{error}</p>}
+          <button type="submit" className={styles.loginButton}>Sign In</button>
+          {error && <p className={styles.errorMessage}>{error}</p>}
         </form>
 
         {showResend && (
-          <div className="resend-verification">
+          <div className={styles.resendVerification}>
             <p>
               Didn't receive the email?{' '}
-              <button onClick={handleResendVerification}>Resend Verification Email</button>
+              <button onClick={handleResendVerification} className={styles.resendButton}>
+                Resend Verification Email
+              </button>
             </p>
           </div>
         )}
 
-        <div className="extra-options">
-          <button onClick={() => navigate('/signup')}>Sign Up</button>
-          <button onClick={() => navigate('/forgotpassword')}>Forgot Password?</button>
+        <div className={styles.extraOptions}>
+          <button onClick={() => navigate('/signup')} className={styles.extraOptionButton}>Sign Up</button>
+          <button onClick={() => navigate('/forgotpassword')} className={styles.extraOptionButton}>Forgot Password?</button>
         </div>
       </div>
     </div>

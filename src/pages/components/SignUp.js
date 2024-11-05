@@ -1,9 +1,10 @@
+// src/components/SignUp.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './../../firebase';
 import { createUserWithEmailAndPassword, sendEmailVerification, signOut } from 'firebase/auth';
 import { doc, setDoc, collection, query, where, getDocs } from 'firebase/firestore';
-import './../styles/SignUp.css';
+import styles from './../styles/SignUp.module.css'; // Import CSS Module
 
 const SignUp = () => {
   const [firstName, setFirstName] = useState('');
@@ -105,13 +106,13 @@ const SignUp = () => {
   };
 
   return (
-    <div className="signup-page">
-      <div className="signup-container">
+    <div className={styles.signupPage}>
+      <div className={styles.signupContainer}>
         <h2>Sign Up</h2>
         {isSignUpSuccessful ? (
-          <div className="message-container">
-            <p className="success-message">Signup is successful. Please check your email to verify your account!</p>
-            <button onClick={handleOkClick} className="ok-button">OK</button>
+          <div className={styles.messageContainer}>
+            <p className={styles.successMessage}>Signup is successful. Please check your email to verify your account!</p>
+            <button onClick={handleOkClick} className={styles.okButton}>OK</button>
           </div>
         ) : (
           <form onSubmit={handleSignUp}>
@@ -154,10 +155,10 @@ const SignUp = () => {
               required
             />
             {isUsernameAvailable === false && (
-              <p className="error-message">Username is already taken. Please choose another one.</p>
+              <p className={styles.errorMessage}>Username is already taken. Please choose another one.</p>
             )}
             {isUsernameAvailable && (
-              <p className="success-message">Username is available.</p>
+              <p className={styles.successMessage}>Username is available.</p>
             )}
 
             <label htmlFor="email">Email</label>
@@ -170,10 +171,10 @@ const SignUp = () => {
               required
             />
             {isEmailAvailable === false && (
-              <p className="error-message">Email is already in use. Please use another email.</p>
+              <p className={styles.errorMessage}>Email is already in use. Please use another email.</p>
             )}
             {isEmailAvailable && email.trim() !== '' && (
-              <p className="success-message">Email is available.</p>
+              <p className={styles.successMessage}>Email is available.</p>
             )}
 
             <label htmlFor="phoneNumber">Phone Number</label>
@@ -195,8 +196,8 @@ const SignUp = () => {
               required
             />
 
-            <button type="submit">Sign Up</button>
-            {error && <p className="error-message">{error}</p>}
+            <button type="submit" className={styles.signupButton}>Sign Up</button>
+            {error && <p className={styles.errorMessage}>{error}</p>}
           </form>
         )}
       </div>
