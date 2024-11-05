@@ -23,7 +23,7 @@ function App() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/profileedit'].includes(location.pathname);
+    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/accountinfo', '/profileedit'].includes(location.pathname);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -98,8 +98,10 @@ function App() {
             {/* Route Definitions */}
             <Routes>
                 {/* Public Routes */}
-                <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />} />
-                <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
+                {/* <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />} /> */}
+                <Route path="/login" element={<Login />} />
+                {/* <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} /> */}
+                <Route path="/signup" element={<SignUp />} />
                 <Route path="/forgotpassword" element={!user ? <ForgotPassword /> : <Navigate to="/" replace />} />
 
                 {/* Authenticated Routes */}

@@ -69,7 +69,7 @@ const Profile = () => {
 
   // Navigate to account info page
   const handleAccountInfoClick = () => {
-    navigate('/account-info');
+    navigate('/accountinfo');
   };
 
   return (

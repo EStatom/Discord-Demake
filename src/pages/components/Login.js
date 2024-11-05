@@ -3,10 +3,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './../../firebase';
 import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
-import { getDocs, collection, query, where, doc, getDoc, setDoc } from 'firebase/firestore';
-import './../styles/Login.css';
+import { getDocs, collection, query, where } from 'firebase/firestore';
+import styles from './../styles/Login.module.css'; // Import CSS Module
 
-const Login = ({ setUser }) => {
+const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,32 +25,16 @@ const Login = ({ setUser }) => {
         const userDoc = querySnapshot.docs[0];
         const email = userDoc.data().email;
 
-        // Check if the account is disabled
-        const docRef = doc(db, 'users', userDoc.id);
-        const userData = await getDoc(docRef);
-        if (userData.exists() && userData.data().isDisabled) {
-          const confirmEnable = window.confirm(
-            'This account is currently disabled. Do you want to re-enable it and log in?'
-          );
-
-          if (!confirmEnable) {
-            return; // Do not proceed with login if user doesn't want to enable
-          }
-
-          // Re-enable the account in Firestore
-          await setDoc(docRef, { isDisabled: false }, { merge: true });
-        }
-
-        // Proceed with the login
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
 
+        await user.reload();  // Force reload of the user's auth state
+
         if (user.emailVerified) {
-            setUser(user)
-            navigate('/'); // Redirect to profile page after successful login
+          navigate('/profile');  // Navigate to profile page if email is verified
         } else {
           setError('Please verify your email before logging in.');
-          setShowResend(true);
+          setShowResend(true);  // Show option to resend verification email
         }
       } else {
         setError('Username not found.');
@@ -68,7 +52,7 @@ const Login = ({ setUser }) => {
         alert('Verification email sent! Please check your inbox.');
       } else {
         alert('No authenticated user found. Please log in again.');
-        navigate('/'); // Redirect to login if no user is authenticated
+        navigate('/login');  // Redirect to login if no user is authenticated
       }
     } catch (error) {
       alert(`Error resending verification email: ${error.message}`);
@@ -76,8 +60,8 @@ const Login = ({ setUser }) => {
   };
 
   return (
-    <div className="login-page">
-      <div className="login-container">
+    <div className={styles.loginPage}>
+      <div className={styles.loginContainer}>
         <h2>Welcome back!</h2>
         <p>We're so excited to see you again!</p>
 
@@ -102,22 +86,24 @@ const Login = ({ setUser }) => {
             required
           />
 
-          <button type="submit">Sign In</button>
-          {error && <p className="error-message">{error}</p>}
+          <button type="submit" className={styles.loginButton}>Sign In</button>
+          {error && <p className={styles.errorMessage}>{error}</p>}
         </form>
 
         {showResend && (
-          <div className="resend-verification">
+          <div className={styles.resendVerification}>
             <p>
               Didn't receive the email?{' '}
-              <button onClick={handleResendVerification}>Resend Verification Email</button>
+              <button onClick={handleResendVerification} className={styles.resendButton}>
+                Resend Verification Email
+              </button>
             </p>
           </div>
         )}
 
-        <div className="extra-options">
-          <button onClick={() => navigate('/signup')}>Sign Up</button>
-          <button onClick={() => navigate('/forgotpassword')}>Forgot Password?</button>
+        <div className={styles.extraOptions}>
+          <button onClick={() => navigate('/signup')} className={styles.extraOptionButton}>Sign Up</button>
+          <button onClick={() => navigate('/forgotpassword')} className={styles.extraOptionButton}>Forgot Password?</button>
         </div>
       </div>
     </div>
