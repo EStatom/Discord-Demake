@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
-import { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import EmojiPicker from 'emoji-picker-react';
-import { collection, query, orderBy, onSnapshot, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
 import { sendMessageToFirebase, uploadFileToFirebase } from './../../firebaseService';
 import { db } from '../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { Menu, Hash, Search, Smile, Plus, Send } from 'lucide-react';
 import './../styles/ChatApp.css';
@@ -76,12 +76,11 @@ const ChatHeader = ({ name, serverId, type, onSearch }) => {
     <div className="chat-header">
       
       <div className="header-left">
-        <Menu className="w-5 h-5" />
-                 {/*<Menu className="w-5 h-5" />: This renders a menu icon with width and height of 5 units. This could represent options/settings.*/}
+        
 
         {type === "channel" && <Hash className="w-5 h-5" />}
                    {/*type === "channel" && (<Hash className="w-5 h-5" />)}: This checks if the type prop is "channel". If it is, it displays a # icon (common for channels).*/}
-        <span className="font-semibold"># {name}</span>
+        <span className="font-semibold"> {name}</span>
                 {/*This displays the name of the channel or direct message */}
 
       </div>
@@ -108,12 +107,35 @@ const ChatHeader = ({ name, serverId, type, onSearch }) => {
 };
 
 // Chat Messages Component
-const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage }) => {
+const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage, username, userId, userData }) => {
+  const defaultProfilePictures = [
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/test.jpg?alt=media&token=ea8cba9e-178d-4e81-8b1e-9d38e6d5e10b',
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images.jpg?alt=media&token=c3a74351-d27b-41a3-89ee-e2e4c180b77d',
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images%20(3).jpg?alt=media&token=784c870b-5cb4-4007-ae8f-c5af1e411af5',
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images%20(2).jpg?alt=media&token=5c299a63-544f-4de0-9ca1-b8b2bc2a700d',
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images%20(1).jpg?alt=media&token=88e2673b-a6b8-4fce-9c84-7775d025984b',
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/download.jpg?alt=media&token=ca4055db-9f75-42a3-a914-d822ae5ddc10',
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/download%20(2).jpg?alt=media&token=fe303e86-3ce9-4d40-ae8e-048e2b2311b4',
+    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/download%20(1).jpg?alt=media&token=2519aed4-036f-45d3-8113-f1cf02af6604'
+  ];
+
+  // Function to get a random profile picture URL
+  const getRandomProfilePicture = () => {
+    const randomIndex = Math.floor(Math.random() * defaultProfilePictures.length);
+    return defaultProfilePictures[randomIndex];
+  };
+ 
+ 
   return (
     <div className="chat-messages">
       {messages.map((message) => (
         <div key={message.id} className="message-item">
           <div className="message-header">
+            <img 
+              src={`${userData?.profilePicture || getRandomProfilePicture()}?t=${new Date().getTime()}`}
+alt="User Avatar" 
+              className="message-avatar" 
+            />
             <span className="message-sender">{message.sender}</span>
             <span className="message-timestamp">{new Date(message.timestamp).toLocaleTimeString()}</span>
           </div>
@@ -123,17 +145,20 @@ const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage }) 
             </p>
             {message.fileURL && <a href={message.fileURL} target="_blank" rel="noopener noreferrer">📁 Download File</a>}
           </div>
-          <div className="message-actions">
-            <button onClick={() => onEditMessage(message.id, prompt('Edit message:', message.content || ''))}>Edit</button>
-            <button onClick={() => onDeleteMessage(message.id)}>Delete</button>
-          </div>
+          {/* Show Edit and Delete buttons only if the current user is the sender */}
+          {message.sender === username && (
+            <div className="message-actions">
+              <button onClick={() => onEditMessage(message.id, prompt('Edit message:', message.content || ''))}>Edit</button>
+              <button onClick={() => onDeleteMessage(message.id)}>Delete</button>
+            </div>
+          )}
         </div>
-        //  <HighlightedText text={message.content || ''} highlight={searchTerm} />
-        // it is to reduce the complexity 
       ))}
     </div>
   );
 };
+
+
 
 
 // Individual Message Component
@@ -242,7 +267,7 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
           <Smile className="emoji-icon" />
         </button>
         <label className="p-1 text-white cursor-pointer">
-          <Plus className="plus-icon" />
+          
           <input type="file" onChange={handleFileChange} className="hidden" />
         </label>
         <button className="send-btn" onClick={sendMessage}>
@@ -320,6 +345,7 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
         searchTerm={searchTerm} 
         onEditMessage={editMessage}   // Pass the edit handler
         onDeleteMessage={deleteMessage}  // Pass the delete handler
+        username={userData?.username}
       />
       <div className="chat-input">
         <ChatInput 

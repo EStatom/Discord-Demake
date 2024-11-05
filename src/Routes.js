@@ -88,7 +88,11 @@ function App() {
                     serverDetails={serverDetails} 
                     selectedChannelId={selectedChannel} 
                     userData={userData}
+                    userId={user?.uid}
                 />
+                
+
+
             )}
 
             {/* Route Definitions */}
