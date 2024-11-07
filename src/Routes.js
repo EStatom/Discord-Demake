@@ -14,6 +14,7 @@ import ProfileEdit from './pages/components/ProfileEdit';
 import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { fetchUserData } from './firebaseService';
+import { updateUserLocation } from './firebaseService';
 
 function App() {
     const [serverDetails, setServerDetails] = useState(null);
@@ -23,14 +24,33 @@ function App() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/accountinfo', '/profileedit'].includes(location.pathname);
+    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/profileedit'].includes(location.pathname);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser || null);
+
             if (currentUser) {
                 const data = await fetchUserData(currentUser.uid);
                 setUserData(data);
+
+                const watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const { latitude, longitude } = position.coords;
+                        updateUserLocation(currentUser.uid, latitude, longitude); // Update location in Firebase
+                    },
+                    (error) => {
+                        console.error("Geolocation error:", error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0,
+                    }
+                );
+
+                // Clear the geolocation watch on logout or unmount
+                return () => navigator.geolocation.clearWatch(watchId);
             } else {
                 setUser(null);
                 setUserData(null);
@@ -94,10 +114,8 @@ function App() {
             {/* Route Definitions */}
             <Routes>
                 {/* Public Routes */}
-                {/* <Route path="/login" element={!user ? <Login setUser={setUser} /> : <Navigate to="/" replace />} /> */}
-                <Route path="/login" element={<Login />} />
-                {/* <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} /> */}
-                <Route path="/signup" element={<SignUp />} />
+                <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
+                <Route path="/signup" element={!user ? <SignUp /> : <Navigate to="/" replace />} />
                 <Route path="/forgotpassword" element={!user ? <ForgotPassword /> : <Navigate to="/" replace />} />
 
                 {/* Authenticated Routes */}

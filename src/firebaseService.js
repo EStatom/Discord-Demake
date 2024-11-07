@@ -77,6 +77,20 @@ const deleteChannelFromServer = async (serverId, channelId) => {
 
 export { deleteChannelFromServer };
 
+const updateUserLocation = async (userId, latitude, longitude) => {
+    try {
+        const userRef = doc(db, 'users', userId);
+        await updateDoc(userRef, {
+            location: new GeoPoint(latitude, longitude)
+        });
+        console.log(`Updated location for user ${userId}`);
+    } catch (error) {
+        console.error("Error updating user location:", error);
+    }
+};
+
+export { updateUserLocation }
+
 // Function to send a message to Firestore (handles text messages and files)
 export const sendMessageToFirebase = async (message, fileURL, serverId, channelId, userId, location) => {
     if (!message && !fileURL) {
@@ -99,10 +113,7 @@ export const sendMessageToFirebase = async (message, fileURL, serverId, channelI
       console.error('Error sending message to Firebase:', error);
     }
   };
-  
-
-
-  
+    
 // Function to upload a file (image/PDF) to Firebase Storage
 export const uploadFileToFirebase = async (file) => {
 try {
