@@ -102,7 +102,7 @@ const ChatHeader = ({ name, serverId, type, onSearch }) => {
                   {/*className="bg-transparent text-white border-none outline-none w-full": This removes the background and borders for the input, makes the text white, and ensures the input field takes up the full width (w-full)*/}
 
       <div className="server-info">
-        Server: {serverId}
+        Server Id: {serverId}
       </div>
     </div>
   );
@@ -158,45 +158,6 @@ alt="User Avatar"
       ))}
     </div>
   );
-};
-
-
-
-
-// Individual Message Component
-const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
-  return (
-    <div className="message">
-      <div className="message">
-        <p className="message-sender">{sender}</p>
-        <p>{content}</p>
-        {fileURL && <a href={fileURL} target="_blank" rel="noopener noreferrer" className="text-blue-400">Download File</a>}
-        <span className="message-timestamp">{timestamp}</span>
-        <div className="flex space-x-2 mt-2">
-          <button onClick={onDelete} className="text-red-500">Delete</button>
-          <button onClick={onEdit} className="text-blue-500">Edit</button>
-        </div>
-      </div>
-    </div>
-  );
-{/*
-  <p className="message-sender">{sender}</p>
-<p>{content}</p>
-Displays the sender’s name and the message content.
-
-If the message has an attached file (fileURL), it shows a link to download the file. This link opens in a new tab.
-###########################################
-  <span className="message-timestamp">{timestamp}</span>
-  Displays the time the message was sent.
-##########################################
-<button onClick={onDelete} className="text-red-500">Delete</button>
-<button onClick={onEdit} className="text-blue-500">Edit</button>
-
-// These buttons allow the user to delete or edit the message using the provided onDelete and onEdit functions, which are passed as props.
-  */}
-
-
-
 };
 
 // Chat Input Component
@@ -367,7 +328,7 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
     <div className="chat-app">
       <ChatHeader 
         name={serverDetails ? serverDetails.name : "Invalid Server Name"}
-        serverId={serverDetails ? serverDetails.description : ""}
+        serverId={serverDetails ? serverDetails.id : ""}
         type="channel"
         onSearch={handleSearch}
       />

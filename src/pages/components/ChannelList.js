@@ -85,7 +85,6 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
         <div className="channel-list-container">
             <div className="server-header">
                 <h2>{serverDetails.name}</h2>
-                <Settings className="settings-icon" />
             </div>
             <ul>
                 {channels.map((channel) => (
@@ -95,17 +94,22 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
                         onClick={() => handleSelectChannel(channel.id)}  
                     >
                         <span>#{channel.name}</span>
+                        {serverDetails.Admin.includes(userId) ? 
                         <button onClick={() => openDeleteModal(channel.id)} className="delete-channel-button">
                             <Trash size={14} />
                         </button>
+                        : null }
                     </li>
                 ))}
                 {/* Plus button for adding a new channel */}
+                {serverDetails.Admin.includes(userId)? 
                 <li>
                     <button onClick={() => setIsAddChannelModalOpen(true)} className="add-channel-button">
                         <Plus /> Add Channel
                     </button>
-                </li>
+                </li> 
+                : null}
+                
             </ul>
 
             {/* User Profile Section */}

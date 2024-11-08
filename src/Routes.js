@@ -111,11 +111,8 @@ function App() {
                     userData={userData}
                     userId={user?.uid}
                 />
-                
-
-
             )}
-            {user && !isAuthOrProfileRoute && serverDetails && (
+            {user && !isAuthOrProfileRoute && serverDetails && (serverDetails.id !== "GeoServer") && (
                 <UserList userIds={serverDetails.users} /> 
             )}
 
