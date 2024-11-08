@@ -25,7 +25,7 @@ function App() {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/profileedit'].includes(location.pathname);
+    const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword','/accountinfo', '/profileedit'].includes(location.pathname);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
