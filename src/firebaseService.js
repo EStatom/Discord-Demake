@@ -141,4 +141,3 @@ const fetchUserDetails = async (userIds) => {
 
 export { fetchUserDetails }
 
-

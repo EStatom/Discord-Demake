@@ -109,7 +109,11 @@ function App() {
                     serverDetails={serverDetails} 
                     selectedChannelId={selectedChannel} 
                     userData={userData}
+                    userId={user?.uid}
                 />
+                
+
+
             )}
             {user && !isAuthOrProfileRoute && serverDetails && (
                 <UserList userIds={serverDetails.users} /> 
