@@ -281,7 +281,7 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
 const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState([]);
-
+  
   useEffect(() => {
     const loadMessages = async () => {
         if (selectedChannelId) {

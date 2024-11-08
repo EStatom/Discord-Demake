@@ -113,7 +113,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
                 <div className="user-info">
                     <img 
                         // src={userData?.profilePicture || 'https://via.placeholder.com/40'}  // Use placeholder if no image
-                        src={userData?.avatar || 'https://via.placeholder.com/40'}  // Use placeholder if no image
+                        src={userData?.profilePicture || 'https://via.placeholder.com/40'}  // Use placeholder if no image
                         alt="User Avatar"
                         className="user-avatar"
                     />

@@ -11,6 +11,7 @@ import ForgotPassword from './pages/components/ForgotPassword';
 import ChatApp from './pages/components/ChatApp';
 import AccountInfo from './pages/components/AccountInfo';
 import ProfileEdit from './pages/components/ProfileEdit';
+import UserList from './pages/components/UserList';
 import {doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { fetchUserData } from './firebaseService';
@@ -64,10 +65,12 @@ function App() {
             // Getting a Snapshot of the data
             const serverSnapshot = await getDoc(serverDoc);
             // Let's make sure it actually pulled information
+            const serverData = serverSnapshot.data();
             if (serverSnapshot.exists()) {
                 setServerDetails({
                     id: serverId,  // Ensure serverId is set properly
-                    ...serverSnapshot.data()  // Spread the server data
+                    ...serverData,  // Spread the server data
+                    users: serverData.Users || [],
                 });
             } else {
                 // No info, that means something is wrong
@@ -107,6 +110,9 @@ function App() {
                     selectedChannelId={selectedChannel} 
                     userData={userData}
                 />
+            )}
+            {user && !isAuthOrProfileRoute && serverDetails && (
+                <UserList userIds={serverDetails.users} /> 
             )}
 
             {/* Route Definitions */}

@@ -129,6 +129,16 @@ try {
 }
 };
 
+const fetchUserDetails = async (userIds) => {
+    const userDocs = await Promise.all(
+        userIds.map(async (userId) => {
+            const userDoc = await getDoc(doc(db, 'users', userId));
+            return userDoc.exists() ? { id: userDoc.id, ...userDoc.data() } : null;
+        })
+    );
+    return userDocs.filter(user => user !== null); // Filter out any null values
+};
 
+export { fetchUserDetails }
 
 
