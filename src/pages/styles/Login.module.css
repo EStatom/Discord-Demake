@@ -1,30 +1,24 @@
-src/styles/Login.css
-body, html {
+/* src/styles/Login.module.css */
+
+/* body, html {
   height: 100%;
   margin: 0;
   font-family: 'Helvetica', 'Arial', sans-serif;
-}
+} */
 
-.login-page {
-  background-image: url('./../images//image-2.jpg');
+.loginPage {
+  background-image: url('./../images/image-2.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100dvh;
+  height: 100vh;
   width: 100%;
   background-color: #36393f; /* Discord dark background */
 }
 
-/* .login-page {
-  background-image: url('./../images//image-2.jpg');
-  background-size: cover;
-  background-position: center;
-} */
-
-
-.login-container {
+.loginContainer {
   background-color: #2f3136; /* Dark card background */
   padding: 40px;
   border-radius: 8px;
@@ -69,7 +63,7 @@ input:focus {
   border: 1px solid #7289da;
 }
 
-button {
+.loginButton {
   padding: 10px;
   background-color: #5865f2; /* Discord button color */
   color: white;
@@ -80,43 +74,43 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
+.loginButton:hover {
   background-color: #4752c4; /* Darker button hover color */
 }
 
-.extra-options {
+.extraOptions {
   display: flex;
   justify-content: space-between;
   margin-top: 15px;
 }
 
-.extra-options button {
+.extraOptionButton {
   background: none;
   color: #7289da;
   border: none;
   cursor: pointer;
 }
 
-.extra-options button:hover {
+.extraOptionButton:hover {
   text-decoration: underline;
 }
 
-  
-  button {
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 4px;
-  }
-  
-  button:hover {
-    background-color: #0056b3;
-  }
-  
-  .extra-options {
-    display: flex;
-    justify-content: space-between;
-  }
-  
+.errorMessage {
+  color: #f04747;
+  margin-top: 10px;
+}
+
+.resendVerification {
+  margin-top: 20px;
+}
+
+.resendButton {
+  background: none;
+  color: #7289da;
+  border: none;
+  cursor: pointer;
+}
+
+.resendButton:hover {
+  text-decoration: underline;
+}

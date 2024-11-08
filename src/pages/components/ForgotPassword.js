@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth } from './../../firebase';
 import { sendPasswordResetEmail } from 'firebase/auth';
-import './../styles/ForgotPassword.css';
+import styles from './../styles/ForgotPassword.module.css'; // Import CSS Module
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -33,8 +33,8 @@ const ForgotPassword = () => {
   };
 
   return (
-    <div className="forgot-password-page">
-      <div className="forgot-password-container">
+    <div className={styles.forgotPasswordPage}>
+      <div className={styles.forgotPasswordContainer}>
         <h2>Forgot Password</h2>
         {!message ? (
           <form onSubmit={handleResetPassword}>
@@ -48,13 +48,13 @@ const ForgotPassword = () => {
               required
             />
 
-            <button type="submit">Reset Password</button>
-            {error && <p className="error-message">{error}</p>}
+            <button type="submit" className={styles.submitButton}>Reset Password</button>
+            {error && <p className={styles.errorMessage}>{error}</p>}
           </form>
         ) : (
-          <div className="message-container">
-            <p className="success-message">{message}</p>
-            <button onClick={handleOkClick} className="ok-button">OK</button>
+          <div className={styles.messageContainer}>
+            <p className={styles.successMessage}>{message}</p>
+            <button onClick={handleOkClick} className={styles.okButton}>OK</button>
           </div>
         )}
       </div>

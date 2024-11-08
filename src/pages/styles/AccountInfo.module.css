@@ -1,0 +1,206 @@
+/* src/styles/AccountInfo.module.css */
+.accountInfoPage {
+  width: 100%;
+  max-width: 1000px;
+  margin: 20px auto;
+  padding: 20px;
+  color: white;
+  overflow-y: auto;
+  box-sizing: border-box;
+  background-color: #36393f;
+}
+
+.profileBanner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2f3136;
+  border-radius: 8px;
+  height: 300px;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.bannerImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.profileDetailsContainer {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 250px;
+}
+
+.profileDetailsContainer h3 {
+  margin: 0;
+  font-size: 24px;
+  padding-bottom: 10px;
+}
+
+.profileAvatar {
+  width: 120px;
+  height: 120px;
+  border: 5px solid #2f3136;
+  border-radius: 50%;
+  overflow: hidden;
+  background-color: #2f3136;
+  margin-bottom: 10px;
+}
+
+.avatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.editProfileBtn {
+  background-color: #7289da;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.editProfileBtn:hover {
+  background-color: #5b6ea5;
+}
+
+.userInfo {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.infoSection {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background-color: #2f3136;
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.passwordAuthSection {
+  width: 100%;
+  max-width: 800px;
+  margin: 30px auto 0;
+}
+
+.authBtn, .disableBtn, .deleteBtn {
+  width: 100%;
+  padding: 10px;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.authBtn {
+  background-color: #7289da;
+}
+
+.authBtn:hover {
+  background-color: #5b6ea5;
+}
+
+.disableBtn {
+  background-color: #f04747;
+}
+
+.disableBtn:hover {
+  background-color: #d43535;
+}
+
+.deleteBtn {
+  background-color: #ff4c4c;
+}
+
+.deleteBtn:hover {
+  background-color: #e60000;
+}
+
+.accountRemoval {
+  width: 100%;
+  max-width: 800px;
+  margin: 20px auto 0;
+  display: flex;
+  gap: 10px;
+}
+
+.closeBtnContainer {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.passwordField {
+  display: flex;
+  align-items: center;
+}
+
+.toggleVisibility {
+  cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+  .profileBanner {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+  }
+
+  .bannerImage {
+    height: 150px;
+  }
+
+  .profileAvatar {
+    width: 100px;
+    height: 100px;
+  }
+
+  .profileDetailsContainer {
+    width: 100%;
+    text-align: center;
+    align-items: center;
+    padding: 0;
+  }
+
+  .profileDetailsContainer h3 {
+    font-size: 20px;
+    padding-bottom: 5px;
+  }
+
+  .accountInfoPage {
+    padding: 0 10px;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .userInfo .infoSection {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

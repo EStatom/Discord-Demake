@@ -4,10 +4,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { auth, db, storage } from './../../firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import './../styles/profile-edit.css';
-
+import styles from './../styles/ProfileEdit.module.css'; // Import CSS Module
 import defaultProfileImage from './../images/image-default.jpg';
-// const defaultProfileImage = './images/default-avatar.png';
 const editBannerImage = './images/default-banner.jpg';
 
 const ProfileEdit = () => {
@@ -36,8 +34,6 @@ const ProfileEdit = () => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const profileData = docSnap.data();
-
-          // Fetch latest profile and banner URLs from storage
           const avatarUrl = await getImageUrl(`users/${user.uid}/avatar`, defaultProfileImage);
           const bannerUrl = await getImageUrl(`users/${user.uid}/banner`, editBannerImage);
 
@@ -114,7 +110,7 @@ const ProfileEdit = () => {
   const handleRemoveProfilePic = async () => {
     try {
       const storageRef = ref(storage, `users/${auth.currentUser.uid}/avatar`);
-      await deleteObject(storageRef); // Delete the profile picture from storage
+      await deleteObject(storageRef);
       setLocalProfileData({
         ...localProfileData,
         avatar: defaultProfileImage,
@@ -131,7 +127,7 @@ const ProfileEdit = () => {
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, localProfileData, { merge: true });
         alert('Changes saved!');
-        navigate('/accountinfo'); // Redirect to account info page
+        navigate('/accountinfo');
       }
     } catch (error) {
       alert('Error saving changes: ' + error.message);
@@ -146,23 +142,23 @@ const ProfileEdit = () => {
   };
 
   return (
-    <div className="profile-edit-page">
+    <div className={styles.profileEditPage}>
       <h2>Edit Profile</h2>
-      <div className="profile-banner">
-        <div className="banner-image">
+      <div className={styles.profileBanner}>
+        <div className={styles.bannerImage}>
           <img
             src={localProfileData.banner || editBannerImage}
             alt="Edit Profile Banner"
-            className="banner-img"
+            className={styles.bannerImg}
           />
         </div>
-        <div className="profile-avatar">
+        <div className={styles.profileAvatar}>
           <img
             src={localProfileData.avatar || defaultProfileImage}
             alt="Profile Avatar"
           />
         </div>
-        <div className="profile-details">
+        <div className={styles.profileDetails}>
           <h3>{localProfileData.displayName}</h3>
           <input
             type="file"
@@ -176,19 +172,19 @@ const ProfileEdit = () => {
             style={{ display: 'none' }}
             onChange={handleBannerChange}
           />
-          <button className="edit-profile-btn" onClick={() => document.getElementById('profilePicUpload').click()}>
+          <button className={styles.editProfileBtn} onClick={() => document.getElementById('profilePicUpload').click()}>
             Change Picture
           </button>
-          <button className="edit-profile-btn" onClick={handleRemoveProfilePic}>
+          <button className={styles.editProfileBtn} onClick={handleRemoveProfilePic}>
             Remove Picture
           </button>
-          <button className="edit-profile-btn" onClick={() => document.getElementById('bannerUpload').click()}>
+          <button className={styles.editProfileBtn} onClick={() => document.getElementById('bannerUpload').click()}>
             Change Banner
           </button>
         </div>
       </div>
 
-      <div className="profile-edit-section">
+      <div className={styles.profileEditSection}>
         <label>Display Name</label>
         <input
           type="text"
@@ -226,9 +222,9 @@ const ProfileEdit = () => {
           placeholder="Add your pronouns"
         />
 
-        <div className="profile-actions">
-          <button className="save-btn" onClick={handleSave}>Save Changes</button>
-          <button className="cancel-btn" onClick={handleCancel}>Cancel</button>
+        <div className={styles.profileActions}>
+          <button className={styles.saveBtn} onClick={handleSave}>Save Changes</button>
+          <button className={styles.cancelBtn} onClick={handleCancel}>Cancel</button>
         </div>
       </div>
     </div>
