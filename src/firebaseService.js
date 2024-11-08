@@ -106,7 +106,8 @@ export const sendMessageToFirebase = async (message, fileURL, serverId, channelI
             content: message || "", // Save empty string if no message but there is a file
             fileURL: fileURL || null, // Save file URL if any
             timestamp: new Date().toISOString(), // Save current timestamp
-            coordinates: location ? new GeoPoint(location.latitude, location.longitude) : null,
+            latitude: location.latitude,  
+            longitude: location.longitude,
         });
         console.log('Message sent to Firebase with ID:', docRef.id);
     } catch (error) {

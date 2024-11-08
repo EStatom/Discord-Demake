@@ -29,15 +29,16 @@ function App() {
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser || null);
-
             if (currentUser) {
+                // Fetch user data
                 const data = await fetchUserData(currentUser.uid);
                 setUserData(data);
 
-                const watchId = navigator.geolocation.watchPosition(
+                // Update user location only once upon login
+                navigator.geolocation.getCurrentPosition(
                     (position) => {
                         const { latitude, longitude } = position.coords;
-                        updateUserLocation(currentUser.uid, latitude, longitude); // Update location in Firebase
+                        updateUserLocation(currentUser.uid, latitude, longitude);
                     },
                     (error) => {
                         console.error("Geolocation error:", error);
@@ -48,9 +49,6 @@ function App() {
                         maximumAge: 0,
                     }
                 );
-
-                // Clear the geolocation watch on logout or unmount
-                return () => navigator.geolocation.clearWatch(watchId);
             } else {
                 setUser(null);
                 setUserData(null);

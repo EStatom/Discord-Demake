@@ -8,6 +8,8 @@ import { db } from '../../firebase';
 import { Menu, Hash, Search, Smile, Plus, Send } from 'lucide-react';
 import './../styles/ChatApp.css';
 
+import { haversineDistance } from "../../haversine"
+
 // HighlightedText Component
 const HighlightedText = ({ text, highlight }) => {
   if (!highlight.trim()) {
@@ -115,7 +117,7 @@ const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage }) 
         <div key={message.id} className="message-item">
           <div className="message-header">
             <span className="message-sender">{message.sender}</span>
-            <span className="message-timestamp">{new Date(message.timestamp).toLocaleTimeString()}</span>
+            <span className="message-timestamp">{new Date(message.timestamp).toLocaleString()}</span>
           </div>
           <div className="message-content">
             <p>
@@ -281,24 +283,41 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    if (selectedChannelId) {
-      const q = query(
-        collection(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`), 
-        orderBy('timestamp', 'asc')
-      );
+    const loadMessages = async () => {
+        if (selectedChannelId) {
+            const q = query(
+                collection(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`),
+                orderBy("timestamp", "asc")
+            );
 
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const channelMessages = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setMessages(channelMessages);  
-      });
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const allMessages = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
 
-      
-      return () => unsubscribe();
-    }
-  }, [serverDetails, selectedChannelId]);
+                if (serverDetails.id === "GeoServer" && userData?.location) {
+                    const nearbyMessages = allMessages.filter((msg) => {
+                        const distance = haversineDistance(
+                            userData.location.latitude,
+                            userData.location.longitude,
+                            msg.latitude,
+                            msg.longitude
+                        );
+                        return distance <= 5; //This is the radius in Km
+                    });
+                    setMessages(nearbyMessages);
+                } else {
+                    setMessages(allMessages);
+                }
+            });
+
+            return () => unsubscribe();
+        }
+    };
+
+    loadMessages();
+  }, [serverDetails, selectedChannelId, userData]);
 
   const editMessage = async (messageId, newContent) => {
     const messageDocRef = doc(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`, messageId);
