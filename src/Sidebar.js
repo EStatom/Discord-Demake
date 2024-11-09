@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc ,arrayUnion, arrayRemove, setDoc, deleteDoc, getDocs, collection} from 'firebase/firestore';
+import { doc, getDoc, updateDoc ,arrayUnion, arrayRemove, setDoc, deleteDoc, getDocs, collection, onSnapshot} from 'firebase/firestore';
 import { db } from './firebase';
 import sidebarStyles from './SidebarStyles';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
@@ -27,9 +27,22 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (uid) {  
-    // Only fetch servers if uid is set
+  if (uid) {
+    // Set up a real-time listener on the user's document
+    const userRef = doc(db, 'users', uid);
+
+    const userListener = onSnapshot(userRef, (userDoc) => {
+      if (userDoc.exists()) {
+        // Call fetchServers when the Servers field changes
+        fetchServers();
+        handleServerClick('a', 'GeoServer');
+      }
+    });
+
+    // Fetch servers initially 
     fetchServers();
+
+    return () => userListener(); 
   }
 }, [uid]);
 
@@ -552,7 +565,7 @@ const fetchServers = async () => {
             </div>
           </div>
         </div>
-      )};
+      )}
 
       {isJoinServerPopupVisible && (  // Join pop-up
         <div style={sidebarStyles.popup}>
@@ -579,7 +592,7 @@ const fetchServers = async () => {
             </form>
           </div>
         </div>
-      )};
+      )}
 
       {isCreateServerPopupVisible && (  // Create pop-up
         <div style={sidebarStyles.popup}>
@@ -612,7 +625,7 @@ const fetchServers = async () => {
             </form>
           </div>
         </div>
-      )};
+      )}
 
       {isServerRenamePopupVisible && (  //Rename pop-up
         <div style={sidebarStyles.popup}>
@@ -638,7 +651,7 @@ const fetchServers = async () => {
             </form>
           </div>
         </div>
-      )};
+      )}
 
 
     </div>
