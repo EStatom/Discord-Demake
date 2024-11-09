@@ -12,6 +12,7 @@ const Sidebar = ({ onSelectServer }) => {
 const [servers, setServers] = useState([]);
 const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null, x: 0, y: 0 });
 const [uid, setUid] = useState(null);
+const [isAdmin, setIsAdmin] = useState(false); 
 
 
 useEffect(() => {
@@ -28,12 +29,12 @@ useEffect(() => {
 
 useEffect(() => {
   if (uid) {
-    // Set up a real-time listener on the user's document
+    // Listener on the user's document
     const userRef = doc(db, 'users', uid);
 
     const userListener = onSnapshot(userRef, (userDoc) => {
       if (userDoc.exists()) {
-        // Call fetchServers when the Servers field changes
+        // Refresh the servers anytime the User's database entry is updated
         fetchServers();
         handleServerClick('a', 'GeoServer');
       }
@@ -78,14 +79,27 @@ const fetchServers = async () => {
   };
 
 // Right-click menu diplay
-  const handleContextMenu = (e, index, serverId) => {
+  const handleContextMenu = async (e, index, serverId) => {
     // Prevent the default context menu
     e.preventDefault(); 
     setContextMenu({ visible: true, serverId, index, x: e.pageX, y: e.pageY });
+    // Fetch the server document to check if the user is an admin
+    const serverDocRef = doc(db, 'servers', serverId);
+    const serverDoc = await getDoc(serverDocRef);
+    const serverData = serverDoc.data();
+    
+    // Check if the user ID is in the Admin array
+    if (serverData?.Admin?.includes(uid)) {
+    setIsAdmin(true); // User is an admin
+      } else {
+        setIsAdmin(false); // User is not an admin
+      }
   };
+
 
   const handleCloseContextMenu = () => {
     setContextMenu({ ...contextMenu, visible: false });
+    setIsAdmin(false);
   };
 
  //Pop up boxes
@@ -130,7 +144,7 @@ const fetchServers = async () => {
 
     const handleOpenServerRenamePopup = async() => {
       setContextMenu({ ...contextMenu, visible: false });
-      // Moved the admin check to pre pop-up to match teh behavior of other functions with no pop-up
+      // I Moved the admin check to pre pop-up to match the behavior of other functions with no pop-up
       // Fetch the server document to check if the user is an admin
       const serverDocRef = doc(db, 'servers', contextMenu.serverId);
       const serverDoc = await getDoc(serverDocRef);
@@ -534,18 +548,33 @@ const fetchServers = async () => {
           <div onClick={handleDisplayServerId} style={{ padding: '8px', cursor: 'pointer' }}>
             Display Server Id
           </div>
-          <div onClick={handleOpenServerRenamePopup} style={{ padding: '8px', cursor: 'pointer' }}>
-            Change Name
-          </div>
-          <div onClick={handleUploadServerImage} style={{ padding: '8px', cursor: 'pointer' }}>
-            Change Server Icon
-          </div>
-          <div onClick={handleLeaveServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
-            Leave Server
-          </div>
-          <div onClick={handleDeleteServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
-            Delete Server
-          </div>
+          {isAdmin && (
+            <>
+              <div onClick={handleOpenServerRenamePopup} style={{ padding: '8px', cursor: 'pointer' }}>
+                Change Name
+              </div>
+              <div onClick={handleUploadServerImage} style={{ padding: '8px', cursor: 'pointer' }}>
+                Change Server Icon
+              </div>
+              <div   // Separator grey line
+              style={{width: '50%',height: '1px',backgroundColor: '#404142',marginBottom: '5px',marginTop: '5px'}}>  
+              </div> 
+              <div onClick={handleDeleteServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
+                Delete Server
+              </div>
+            </>
+          )}
+          {!isAdmin && (
+            <>
+            <div   // Separator grey line
+            style={{width: '50%',height: '1px',backgroundColor: '#404142',marginBottom: '5px', marginTop: '5px'}}>  
+            </div> 
+            <div onClick={handleLeaveServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
+              Leave Server
+            </div>
+            </>
+          )}
+
         </div>
       )}
 
