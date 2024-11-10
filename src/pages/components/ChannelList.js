@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Plus, Trash } from 'lucide-react';
-import { fetchChannels, createChannelInServer, deleteChannelFromServer, fetchUserData } from './../../firebaseService'; 
+import { fetchChannels, createChannelInServer, deleteChannelFromServer } from './../../firebaseService'; 
 import { signOut } from "firebase/auth";
 import { auth } from './../../firebase';
 import AddChannelModal from './AddChannelModal';
@@ -29,7 +29,13 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
                 }
             });
         }
-    }, [serverDetails, onSelectChannel]);
+    }, [serverDetails, onSelectChannel, activeChannel]);
+
+    useEffect(() => {
+        if (activeChannel) {
+            navigate(`/server/${serverDetails.id}/channel/${activeChannel}`);
+        }
+    }, [activeChannel, serverDetails, navigate]);
 
     const handleLogout = async () => {
         try {

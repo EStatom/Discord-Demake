@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import { Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from './firebase';
-import Landing from './pages/components/Landing';
 import Sidebar from './Sidebar';
 import ChannelList from './pages/components/ChannelList';
 import Login from './pages/components/Login';
@@ -126,7 +125,6 @@ function App() {
                 {/* Authenticated Routes */}
                 {user ? (
                     <>
-                        <Route path="/" element={<Landing />} />
                         <Route path="/accountinfo" element={<AccountInfo />} />
                         <Route path="/profileedit" element={<ProfileEdit />} />
                     </>

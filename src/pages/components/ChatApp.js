@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { collection, query, orderBy, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
 import { sendMessageToFirebase, uploadFileToFirebase } from './../../firebaseService';
@@ -267,7 +267,7 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
 const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState([]);
-  
+
   useEffect(() => {
     const loadMessages = async () => {
         if (selectedChannelId) {
@@ -305,6 +305,7 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
     loadMessages();
   }, [serverDetails, selectedChannelId, userData]);
 
+
   const editMessage = async (messageId, newContent) => {
     const messageDocRef = doc(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`, messageId);
     await updateDoc(messageDocRef, { content: newContent });
@@ -332,6 +333,7 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
         type="channel"
         onSearch={handleSearch}
       />
+      <div className='chat-messages'>
       <ChatMessages 
         messages={messages} 
         searchTerm={searchTerm} 
@@ -339,6 +341,8 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
         onDeleteMessage={deleteMessage}  // Pass the delete handler
         username={userData?.username}
       />
+      </div>
+      
       <div className="chat-input">
         <ChatInput 
           selectedServerId={serverDetails ? serverDetails.id : null} 

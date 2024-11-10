@@ -1,8 +1,7 @@
 import { collection, getDoc, getDocs, doc, setDoc, deleteDoc } from 'firebase/firestore';
-import { addDoc, query, orderBy, onSnapshot, updateDoc, GeoPoint } from 'firebase/firestore';
+import { addDoc, updateDoc, GeoPoint } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from './firebase';
-import { geoFirestore } from './firebase';
 
 const fetchChannels = async (serverId) => {
     try {
@@ -136,8 +135,9 @@ const fetchUserDetails = async (userIds) => {
             return userDoc.exists() ? { id: userDoc.id, ...userDoc.data() } : null;
         })
     );
-    return userDocs.filter(user => user !== null); // Filter out any null values
+    return userDocs.filter(user => user !== null); 
 };
 
 export { fetchUserDetails }
+
 
