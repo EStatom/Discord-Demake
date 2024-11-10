@@ -94,7 +94,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
                         onClick={() => handleSelectChannel(channel.id)}  
                     >
                         <span>#{channel.name}</span>
-                        {serverDetails.Admin.includes(userId) ? 
+                        {Array.isArray(serverDetails.Admin) && serverDetails.Admin.includes(userId) ? 
                         <button onClick={() => openDeleteModal(channel.id)} className="delete-channel-button">
                             <Trash size={14} />
                         </button>
@@ -102,7 +102,7 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
                     </li>
                 ))}
                 {/* Plus button for adding a new channel */}
-                {serverDetails.Admin.includes(userId)? 
+                {Array.isArray(serverDetails.Admin) && serverDetails.Admin.includes(userId) ? 
                 <li>
                     <button onClick={() => setIsAddChannelModalOpen(true)} className="add-channel-button">
                         <Plus /> Add Channel
