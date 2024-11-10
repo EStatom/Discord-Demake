@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, updateDoc ,arrayUnion, arrayRemove, setDoc, deleteDoc, getDocs, collection} from 'firebase/firestore';
+import { doc, getDoc, updateDoc ,arrayUnion, arrayRemove, setDoc, deleteDoc, getDocs, collection, onSnapshot} from 'firebase/firestore';
 import { db } from './firebase';
 import sidebarStyles from './SidebarStyles';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject, listAll } from 'firebase/storage';
 
 
 
@@ -11,6 +12,7 @@ const Sidebar = ({ onSelectServer }) => {
 const [servers, setServers] = useState([]);
 const [contextMenu, setContextMenu] = useState({ visible: false, serverId: null, x: 0, y: 0 });
 const [uid, setUid] = useState(null);
+const [isAdmin, setIsAdmin] = useState(false); 
 
 
 useEffect(() => {
@@ -26,28 +28,43 @@ useEffect(() => {
 
 
 useEffect(() => {
-  if (uid) {  // Only fetch servers if uid is set
+  if (uid) {
+    // Listener on the user's document
+    const userRef = doc(db, 'users', uid);
+
+    const userListener = onSnapshot(userRef, (userDoc) => {
+      if (userDoc.exists()) {
+        // Refresh the servers anytime the User's database entry is updated
+        fetchServers();
+        handleServerClick('a', 'GeoServer');
+      }
+    });
+
+    // Fetch servers initially 
     fetchServers();
+
+    return () => userListener(); 
   }
 }, [uid]);
 
-//clicks on Geoserver when page initially renders
+// Clicks on Geoserver when page initially renders
 useEffect(() => {
   handleServerClick('a', 'GeoServer');
 }, []); 
 
-  const fetchServers = async () => {
-      const userDoc = await getDoc(doc(db, 'users', uid));
-      const userServers = userDoc.data().Servers  || [];
-      const serverList = await Promise.all(
-        userServers.map(async (id) => {
-          const serverDocRef = doc(db, 'servers', id);
-          const serverDoc = await getDoc(serverDocRef);
-          return { id: serverDoc.id, ...serverDoc.data()};
-        })
-      );
-      setServers(serverList);
-      };
+// Function for generating the serverlist from the user for the sidebar.
+const fetchServers = async () => {
+    const userDoc = await getDoc(doc(db, 'users', uid));
+    const userServers = userDoc.data().Servers  || [];
+    const serverList = await Promise.all(
+      userServers.map(async (id) => {
+        const serverDocRef = doc(db, 'servers', id);
+        const serverDoc = await getDoc(serverDocRef);
+        return { id: serverDoc.id, ...serverDoc.data()};
+       })
+    );
+    setServers(serverList);
+    };
 
 
 
@@ -61,18 +78,29 @@ useEffect(() => {
     onSelectServer(serverId); 
   };
 
-// Right-click menu
-  const handleContextMenu = (e, index, serverId) => {
-    e.preventDefault(); // Prevent the default context menu
+// Right-click menu diplay
+  const handleContextMenu = async (e, index, serverId) => {
+    // Prevent the default context menu
+    e.preventDefault(); 
     setContextMenu({ visible: true, serverId, index, x: e.pageX, y: e.pageY });
+    // Fetch the server document to check if the user is an admin
+    const serverDocRef = doc(db, 'servers', serverId);
+    const serverDoc = await getDoc(serverDocRef);
+    const serverData = serverDoc.data();
+    
+    // Check if the user ID is in the Admin array
+    if (serverData?.Admin?.includes(uid)) {
+    setIsAdmin(true); // User is an admin
+      } else {
+        setIsAdmin(false); // User is not an admin
+      }
   };
+
 
   const handleCloseContextMenu = () => {
     setContextMenu({ ...contextMenu, visible: false });
+    setIsAdmin(false);
   };
-
-
-
 
  //Pop up boxes
     const [isMainPopupVisible, setIsMainPopupVisible] = useState(false); 
@@ -116,12 +144,13 @@ useEffect(() => {
 
     const handleOpenServerRenamePopup = async() => {
       setContextMenu({ ...contextMenu, visible: false });
+      // I Moved the admin check to pre pop-up to match the behavior of other functions with no pop-up
       // Fetch the server document to check if the user is an admin
       const serverDocRef = doc(db, 'servers', contextMenu.serverId);
       const serverDoc = await getDoc(serverDocRef);
       const serverData = serverDoc.data();
       if (serverData.Admin && serverData.Admin.includes(uid)) {
-        // User is an admin, proceed with renaming
+      // User is an admin, proceed with to open the popup for renaming
         setIsServerRenamePopupVisible(true);
       } else {
         alert("You do not have permission to rename this server.");
@@ -151,8 +180,9 @@ useEffect(() => {
       return checkIfServerExistsCreateSnap.exists();
     };
 
-  //Functions tied to pop up boxes  
-    const handleSubmitJoinServer = async(e) => {
+// Functions tied to pop up boxes 
+  // Join
+  const handleSubmitJoinServer = async(e) => {
       e.preventDefault();
       const joinRef = doc(db, 'users', uid);
 
@@ -161,6 +191,11 @@ useEffect(() => {
 
         if (!serverExists) {
           setJoinServerError('Sever not found. Please enter a valid Server ID');
+          return;
+        }
+
+        if (inputJoinServer == "GeoServer") {
+          setJoinServerError('You already have access to the Geo Server.')
           return;
         }
         //Register Server to the user's profile
@@ -183,13 +218,14 @@ useEffect(() => {
       }
     };
 
-    
-    const handleSubmitCreateServer = async (e) => {
+  // Create  
+  const handleSubmitCreateServer = async (e) => {
       e.preventDefault();
 
       const randomImageNumber = Math.floor(Math.random() * 50) + 1;
 
       try {
+        // Check if the server id is already taken
         const serverExists2 = await checkIfServerExistsCreate();
 
         if (serverExists2) {
@@ -223,21 +259,23 @@ useEffect(() => {
       handleCloseCreateServerPopup();
       fetchServers();
 
-    // Clicking the new server by assuming the new server is added to the end of the servers list
-    const newIndex = servers.length;
-    handleServerClick(newIndex, newServerId);
+      // Clicking the new server by assuming the new server is added to the end of the servers list
+      const newIndex = servers.length;
+      handleServerClick(newIndex, newServerId);
 
       }catch(error) {
         setCreateServerError('Failed to create the server. Please try again');
       }
     };
 
-  //Right-click menu functions
-        const handleDisplayServerId = async() => {
+// Right-click menu functions
+  // Diplay ID
+  const handleDisplayServerId = async() => {
           alert("Server Id =" + ' ' + contextMenu.serverId);
         }
-
-        const handleServerRename = async(e) => {
+  
+  // Server Rename
+  const handleServerRename = async(e) => {
           e.preventDefault();
           if (!Rename) {
             setRenameError('Server name cannot be empty');
@@ -254,7 +292,59 @@ useEffect(() => {
             console.error("Error renaming server:", error);
        }};
 
-       const handleLeaveServer = async () => {
+  // Change Server Icon     
+  const handleUploadServerImage = async () => {
+        try {
+          // Fetch the server document to check if the user is an admin
+          const serverDocRef = doc(db, 'servers', contextMenu.serverId);
+          const serverDoc = await getDoc(serverDocRef);
+          const serverData = serverDoc.data();
+            
+          // Check if the user ID is in the Admin array
+          if (serverData?.Admin?.includes(uid)) {
+            // If user is an admin then continue with the function
+            const input = document.createElement("input");
+            input.type = "file";
+            input.accept = "image/*";
+            input.onchange = async (e) => {
+              const file = e.target.files[0];
+              if (!file) return;
+      
+              try {
+                const storage = getStorage();
+                const storageRef = ref(storage, `serverIcons/${contextMenu.serverId}/${file.name}`);
+      
+                // Upload the file to Firebase Storage
+                await uploadBytes(storageRef, file);
+      
+                // Get the download URL of the uploaded file
+                const downloadURL = await getDownloadURL(storageRef);
+      
+                // Update the server document's image field in Firestore
+                await updateDoc(serverDocRef, { image: downloadURL });
+      
+                // Refresh the server list to reflect the updated image
+                fetchServers();
+      
+                // Click the updated server for routing
+                handleServerClick(contextMenu.index, contextMenu.serverId);
+      
+              } catch (error) {
+                console.error("Failed to upload file or update server icon:", error);
+              }
+            };
+            input.click();
+          } else {
+            alert("You do not have permission to change this Server's icon.");
+          }
+      
+        } catch (error) {
+          console.error("Failed to fetch server document or check permissions:", error);
+        }
+      };
+      
+  // Leave Server
+  const handleLeaveServer = async () => {
     
         try {
           // Fetch the server document to check if the user is an admin
@@ -287,7 +377,8 @@ useEffect(() => {
         }
       };
   
-      const handleDeleteServer = async () => {
+  // Delete Server
+  const handleDeleteServer = async () => {
 
         try {
           // Fetch the server document to check if the user is an admin
@@ -338,14 +429,27 @@ useEffect(() => {
               await deleteDoc(channelDoc.ref);
               });
 
+              // Delete all files related to the server from Firebase Storage
+              const storage = getStorage();
+              const serverImagesRef = ref(storage, `serverIcons/${contextMenu.serverId}`);
+      
+              // List all files in the server's path and delete them
+              const listResult = await listAll(serverImagesRef);
+              const deleteFilesPromises = listResult.items.map(itemRef => deleteObject(itemRef));
+              await Promise.all(deleteFilesPromises);
+
               // Wait for all channel delete operations to complete
               await Promise.all(deletePromises);
 
               // And finally delete the server
               await updateDoc(doc(db, 'users', uid), { Servers: arrayRemove(contextMenu.serverId) });
               await deleteDoc(doc(db, 'servers', contextMenu.serverId));
-              fetchServers(); // Refresh the server list
+
+              // Refresh the server list
+              fetchServers(); 
               handleCloseContextMenu();
+
+              // Click the geoserver to handle routing
               handleServerClick('a', 'GeoServer')
             } else {
               alert("You do not have permission to delete this server.");
@@ -354,15 +458,16 @@ useEffect(() => {
           console.error("Error deleting server:", error);
      }};
 
- //Main return
+//Main return
   
   return (
     <div style={sidebarStyles.sidebar}
+    // Turn off standard right click menu for the entire sidebar
     onContextMenu={(e) => {
-      e.preventDefault(); //turns off standard right click menu
+      e.preventDefault(); 
     }}
     >
-     <div
+     <div    // Static Geo Server container
       style={
         hoveredIndex === 'a'
         ? sidebarStyles.iconContainerHover
@@ -386,39 +491,50 @@ useEffect(() => {
           />
     </div> 
 
-      <div   style={{width: '50%',height: '1px',backgroundColor: '#404142',marginBottom: '15px'}}></div>
-
-      {servers.map((server, index) => (
-        <div
-          key={server.id}
-          style={
-            hoveredIndex === index
-              ? sidebarStyles.iconContainerHover
-              : activeIndex === index
-              ? sidebarStyles.iconContainerActive
-              : sidebarStyles.iconContainer
-          }  //changes style based on the idex of the div container and hovered or active
-          onClick={() => handleServerClick(index, server.id)}  //registers as clicked
-          onMouseEnter={() => setHoveredIndex(index)}  //registers as hovered
-          onMouseLeave={() => setHoveredIndex(null)}
-          onContextMenu={(e) => handleContextMenu(e, index, server.id)}
+    <div   // Separator grey line
+    style={{width: '50%',height: '1px',backgroundColor: '#404142',marginBottom: '15px'}}>  
+    </div> 
+    
+    {servers.map((server, index) => (  // Containers from serverlist
+      <div
+        key={server.id}
+         style={
+          hoveredIndex === index
+            ? sidebarStyles.iconContainerHover
+            : activeIndex === index
+            ? sidebarStyles.iconContainerActive
+             : sidebarStyles.iconContainer
+          }  
+        onClick={() => handleServerClick(index, server.id)}  // Routes to server
+        onMouseEnter={() => setHoveredIndex(index)}  // Adds hover styling
+        onMouseLeave={() => setHoveredIndex(null)} // Removes hover styling
+        onContextMenu={(e) => handleContextMenu(e, index, server.id)}
         >
-          <img
-            src={server.image}
-            style={
-            hoveredIndex === index 
-              ? sidebarStyles.serverIconHover
-              : activeIndex === index
-              ? sidebarStyles.serverIconHover
-              : sidebarStyles.serverIcon}  //changes sytle of the icon to match the container.  We can do something similar with active if we want to match discord more closely
-            alt={server.name}
-          />
-        </div>
+       <img
+          src={server.image}
+          style={
+          hoveredIndex === index 
+           ? sidebarStyles.serverIconHover
+           : activeIndex === index
+           ? sidebarStyles.serverIconHover
+           : sidebarStyles.serverIcon}  
+           alt={server.name}
+        />
+      </div>
       ))}
 
+      <div  // Join/Create server button
+        style={hoveredIndex === 'joinServer' ? sidebarStyles.iconContainerHover : sidebarStyles.iconContainer}
+        onMouseEnter={() => setHoveredIndex('joinServer')}
+        onMouseLeave={() => setHoveredIndex(null)}
+      >
+        <button style={sidebarStyles.serverIcon} onClick={handleOpenMainPopup}>
+          <span style={sidebarStyles.icon}>➕</span>  
+        </button>
+      </div>
 
-{contextMenu.visible && (
-        <div
+      {contextMenu.visible && (  //Right-click menu elements
+        <div  
           style={{
             position: 'absolute',
             top: contextMenu.y,
@@ -432,29 +548,37 @@ useEffect(() => {
           <div onClick={handleDisplayServerId} style={{ padding: '8px', cursor: 'pointer' }}>
             Display Server Id
           </div>
-          <div onClick={handleOpenServerRenamePopup} style={{ padding: '8px', cursor: 'pointer' }}>
-            Change Name
-          </div>
-          <div onClick={handleLeaveServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
-            Leave Server
-          </div>
-          <div onClick={handleDeleteServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
-            Delete Server
-          </div>
+          {isAdmin && (
+            <>
+              <div onClick={handleOpenServerRenamePopup} style={{ padding: '8px', cursor: 'pointer' }}>
+                Change Name
+              </div>
+              <div onClick={handleUploadServerImage} style={{ padding: '8px', cursor: 'pointer' }}>
+                Change Server Icon
+              </div>
+              <div   // Separator grey line
+              style={{width: '50%',height: '1px',backgroundColor: '#404142',marginBottom: '5px',marginTop: '5px'}}>  
+              </div> 
+              <div onClick={handleDeleteServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
+                Delete Server
+              </div>
+            </>
+          )}
+          {!isAdmin && (
+            <>
+            <div   // Separator grey line
+            style={{width: '50%',height: '1px',backgroundColor: '#404142',marginBottom: '5px', marginTop: '5px'}}>  
+            </div> 
+            <div onClick={handleLeaveServer} style={{ padding: '8px', cursor: 'pointer', color: 'red' }}>
+              Leave Server
+            </div>
+            </>
+          )}
+
         </div>
       )}
 
-      <div
-        style={hoveredIndex === 'joinServer' ? sidebarStyles.iconContainerHover : sidebarStyles.iconContainer}
-        onMouseEnter={() => setHoveredIndex('joinServer')}
-        onMouseLeave={() => setHoveredIndex(null)}
-      >
-        <button style={sidebarStyles.serverIcon} onClick={handleOpenMainPopup}>
-          <span style={sidebarStyles.icon}>➕</span>  
-        </button>
-      </div>
-
-      {isMainPopupVisible && (
+      {isMainPopupVisible && (  // Pop-up with choice of Join or Create
         <div style={sidebarStyles.popup}>
           <div style={sidebarStyles.popupContent}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -472,7 +596,7 @@ useEffect(() => {
         </div>
       )}
 
-      {isJoinServerPopupVisible && (
+      {isJoinServerPopupVisible && (  // Join pop-up
         <div style={sidebarStyles.popup}>
           <div style={sidebarStyles.popupContent}>
             <h2>Enter Server ID</h2>
@@ -499,7 +623,7 @@ useEffect(() => {
         </div>
       )}
 
-{isCreateServerPopupVisible && (
+      {isCreateServerPopupVisible && (  // Create pop-up
         <div style={sidebarStyles.popup}>
           <div style={sidebarStyles.popupContent}>
             <h2>Create New Server</h2>
@@ -532,7 +656,7 @@ useEffect(() => {
         </div>
       )}
 
-{isServerRenamePopupVisible && (
+      {isServerRenamePopupVisible && (  //Rename pop-up
         <div style={sidebarStyles.popup}>
           <div style={sidebarStyles.popupContent}>
             <h2>New Server Name</h2>
