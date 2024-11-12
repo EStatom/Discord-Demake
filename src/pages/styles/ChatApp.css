@@ -184,6 +184,10 @@ margin-left: auto;
   cursor: pointer;
 }
 
+.emoji-btn:hover {
+  background-color:  #084af2; /* Darker blue on hover */
+}
+
 .emoji-picker {
   position: absolute;
   bottom: 56px;
