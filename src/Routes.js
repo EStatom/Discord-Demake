@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { Route, Routes, useNavigate, Navigate, useLocation } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { auth } from './firebase';
 import Landing from './pages/components/Landing';
 import Sidebar from './Sidebar';
@@ -11,9 +11,10 @@ import ForgotPassword from './pages/components/ForgotPassword';
 import ChatApp from './pages/components/ChatApp';
 import AccountInfo from './pages/components/AccountInfo';
 import ProfileEdit from './pages/components/ProfileEdit';
-import {doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { db } from './firebase';
 import { fetchUserData } from './firebaseService';
+
 
 function App() {
     const [serverDetails, setServerDetails] = useState(null);
@@ -26,6 +27,11 @@ function App() {
     const isAuthOrProfileRoute = ['/login', '/signup', '/forgotpassword', '/accountinfo', '/profileedit'].includes(location.pathname);
 
     useEffect(() => {
+        // Set Firebase authentication persistence to local storage
+        setPersistence(auth, browserLocalPersistence)
+            .then(() => console.log("Persistence set to local."))
+            .catch((error) => console.error("Error setting persistence:", error));
+
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser || null);
             if (currentUser) {
@@ -40,21 +46,21 @@ function App() {
     }, []);
     
     const fetchServerDetails = async (serverId) => {
-        // First lets make sure the serverId is not null or undefined
-        if(serverId) {
+        // First, ensure the serverId is not null or undefined
+        if (serverId) {
             const serverDoc = doc(db, 'servers', serverId);
             // Getting a Snapshot of the data
             const serverSnapshot = await getDoc(serverDoc);
-            // Let's make sure it actually pulled information
+            // Ensure data was successfully retrieved
             if (serverSnapshot.exists()) {
                 setServerDetails({
                     id: serverId,  // Ensure serverId is set properly
                     ...serverSnapshot.data()  // Spread the server data
                 });
             } else {
-                // No info, that means something is wrong
+                // No info, something is wrong
                 console.error('NO SUCH SERVER!');
-                setServerDetails(null); // Clear the server details if the server does not exist
+                setServerDetails(null); // Clear server details if server does not exist
                 setSelectedChannel(null);
             }
         }
@@ -115,6 +121,5 @@ function App() {
         </div>
     );
 }
-
 
 export default App;

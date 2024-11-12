@@ -1,6 +1,6 @@
 const sidebarStyles = {
   sidebar: {
-    height: '100',
+    height: '100%',
     width: '70px',
     backgroundColor: '#202225',
     display: 'flex',
@@ -63,18 +63,20 @@ const sidebarStyles = {
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.90)', // Darker dimmed background overlay
     zIndex: '1000',
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
   },
   popupContent: {
-    backgroundColor: '#202225',
+    backgroundColor: '#2f3136', // Unified dark gray background
     padding: '20px',
     borderRadius: '10px',
-    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)', // Soft box shadow for depth
     width: '300px',
+    color: 'white', // Text color for all content inside popups
+    fontFamily: 'Arial, sans-serif', // Consistent font across components
   },
   input: {
     width: '90%',
@@ -82,6 +84,8 @@ const sidebarStyles = {
     marginBottom: '10px',
     borderRadius: '5px',
     border: '1px solid #ccc',
+    backgroundColor: '#202225', // Input background color
+    color: 'white', // Text color for inputs
   },
   buttonContainer: {
     display: 'flex',
@@ -92,7 +96,7 @@ const sidebarStyles = {
   submitButton: {
     width: '100%', 
     padding: '0 15px',
-    backgroundColor: '#007bff',
+    backgroundColor: '#7289da', // Blue button for primary actions
     color: 'white',
     border: 'none',
     borderRadius: '5px',
@@ -107,7 +111,7 @@ const sidebarStyles = {
   closeButton: {
     width: '100%', 
     padding: '0 15px',
-    backgroundColor: '#dc3545',
+    backgroundColor: '#dc3545', // Red button for destructive actions
     color: 'white',
     border: 'none',
     borderRadius: '5px',
