@@ -110,21 +110,16 @@ const ChatHeader = ({ name, serverId, type, onSearch }) => {
 
 // Chat Messages Component
 const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage, username, userId, userData }) => {
-  const defaultProfilePictures = [
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/test.jpg?alt=media&token=ea8cba9e-178d-4e81-8b1e-9d38e6d5e10b',
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images.jpg?alt=media&token=c3a74351-d27b-41a3-89ee-e2e4c180b77d',
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images%20(3).jpg?alt=media&token=784c870b-5cb4-4007-ae8f-c5af1e411af5',
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images%20(2).jpg?alt=media&token=5c299a63-544f-4de0-9ca1-b8b2bc2a700d',
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/images%20(1).jpg?alt=media&token=88e2673b-a6b8-4fce-9c84-7775d025984b',
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/download.jpg?alt=media&token=ca4055db-9f75-42a3-a914-d822ae5ddc10',
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/download%20(2).jpg?alt=media&token=fe303e86-3ce9-4d40-ae8e-048e2b2311b4',
-    'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/download%20(1).jpg?alt=media&token=2519aed4-036f-45d3-8113-f1cf02af6604'
-  ];
+  const profilePictureMapping = {
+    cboyet: 'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/users%2FW44DG8xTzMQHQ2JiUqJ6w8cLff12%2Favatar?alt=media&token=d165812a-ba4a-434a-a4c4-8d4050e67e60',
+    Teamlion: 'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/lions.jpg?alt=media&token=644baea3-147d-4224-9e16-cb951e445f9a',
+    ayman1998:'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/users%2FAyman.JPG?alt=media&token=43cd33e9-5ffd-4e84-9970-1deed8dcf1f5',
+    krm070:'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/users%2FcD6FpUDYd3YIbaNPw9LveUqiWUB2%2Favatar?alt=media&token=a98573d3-1e1f-4cd5-bcb6-39be86f1f07d',
+    TestUser:'https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/users%2Flion-wall-art.jpg?alt=media&token=a64a36cd-f708-4cf0-9ba3-93523da9b4bb'
+  };
 
-  // Function to get a random profile picture URL
-  const getRandomProfilePicture = () => {
-    const randomIndex = Math.floor(Math.random() * defaultProfilePictures.length);
-    return defaultProfilePictures[randomIndex];
+  const getProfilePicture = (sender) => {
+    return profilePictureMapping[sender] || 'https://via.placeholder.com/40';
   };
  
  
@@ -134,8 +129,8 @@ const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage, us
         <div key={message.id} className="message-item">
           <div className="message-header">
             <img 
-              src={`${userData?.profilePicture || getRandomProfilePicture()}?t=${new Date().getTime()}`}
-alt="User Avatar" 
+              src={`${getProfilePicture(message.sender)}?t=${new Date().getTime()}`}
+              alt="User Avatar" 
               className="message-avatar" 
             />
             <span className="message-sender">{message.sender}</span>

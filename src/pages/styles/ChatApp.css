@@ -258,7 +258,12 @@ background-color: transparent;
 border: none;
 cursor: pointer;
 }
+.emoji-btn:hover {
+  background-color:  #0847e5; /* Darker blue on hover */
+}
 
+.send-btn:hover {
+  background-color:  #0847e5;}
 
 .plus-icon {
   color: white; /* White icon color */
