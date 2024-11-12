@@ -8,7 +8,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { Menu, Hash, Search, Smile, Plus, Send } from 'lucide-react';
 import './../styles/ChatApp.css';
 
-import { haversineDistance } from "../../haversine"
+import { haversineDistance } from "./../../haversine"
 
 // HighlightedText Component
 const HighlightedText = ({ text, highlight }) => {
@@ -290,7 +290,7 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
                             msg.latitude,
                             msg.longitude
                         );
-                        return distance <= 5; //This is the radius in Km
+                        return distance <= 20; //This is the radius in Km
                     });
                     setMessages(nearbyMessages);
                 } else {
