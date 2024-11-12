@@ -16,10 +16,10 @@ const UserList = ({ userIds }) => {
                         const userData = userDoc.data();
                         return {
                             username: userData.username || "Unknown User",
-                            profilePicture: userData.profilePicture || "default_profile_pic_url" // Replace with a default if needed
+                            avatar: userData.avatar || "default_profile_pic_url" // Replace with a default if needed
                         };
                     }
-                    return { username: "Unknown User", profilePicture: "default_profile_pic_url" };
+                    return { username: "Unknown User", avatar: "default_profile_pic_url" };
                 })
             );
             setUsers(fetchedUsers);
@@ -37,7 +37,7 @@ const UserList = ({ userIds }) => {
                 users.map((user, index) => (
                     <div key={index} className="user-item">
                         <img
-                            src={user.profilePicture}
+                            src={user.avatar}
                             alt={`${user.username}'s profile`}
                             className="user-avatar"
                         />
