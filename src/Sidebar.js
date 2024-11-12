@@ -367,6 +367,8 @@ const fetchServers = async () => {
           // Proceed to remove the user from the server
           const userRef = doc(db, 'users', uid);
           await updateDoc(userRef, { Servers: arrayRemove(contextMenu.serverId) });
+          const serverRef = doc(db, 'servers', contextMenu.serverId);
+          await updateDoc(serverRef, { Users: arrayRemove(uid)});
           fetchServers(); // Refresh the server list
           handleCloseContextMenu();
           handleServerClick('a', 'GeoServer');
@@ -480,7 +482,7 @@ const fetchServers = async () => {
         onMouseLeave={() => setHoveredIndex(null)}
     >
       <img
-        src='https://unsplash.it/600/400?image=47'
+        src='https://firebasestorage.googleapis.com/v0/b/discord-demake-ae307.appspot.com/o/serverIcons%2FGeoServer%2Fmap%20(1).png?alt=media&token=78c75802-82ad-47eb-9f64-1a83bd9c07f5'
         style={
           hoveredIndex === 'a' 
           ? sidebarStyles.serverIconHover
