@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Settings, Plus, Trash } from 'lucide-react';
-import { fetchChannels, createChannelInServer, deleteChannelFromServer, fetchUserData } from './../../firebaseService'; 
+import { fetchChannels, createChannelInServer, deleteChannelFromServer } from './../../firebaseService'; 
 import { signOut } from "firebase/auth";
 import { auth } from './../../firebase';
 import AddChannelModal from './AddChannelModal';
@@ -29,7 +29,13 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
                 }
             });
         }
-    }, [serverDetails, onSelectChannel]);
+    }, [serverDetails, onSelectChannel, activeChannel]);
+
+    useEffect(() => {
+        if (activeChannel) {
+            navigate(`/server/${serverDetails.id}/channel/${activeChannel}`);
+        }
+    }, [activeChannel, serverDetails, navigate]);
 
     const handleLogout = async () => {
         try {
@@ -85,7 +91,6 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
         <div className="channel-list-container">
             <div className="server-header">
                 <h2>{serverDetails.name}</h2>
-                <Settings className="settings-icon" />
             </div>
             <ul>
                 {channels.map((channel) => (
@@ -95,24 +100,28 @@ const ChannelList = ({ serverDetails, onSelectChannel, userId, userData }) => {
                         onClick={() => handleSelectChannel(channel.id)}  
                     >
                         <span>#{channel.name}</span>
+                        {Array.isArray(serverDetails.Admin) && serverDetails.Admin.includes(userId) ? 
                         <button onClick={() => openDeleteModal(channel.id)} className="delete-channel-button">
                             <Trash size={14} />
                         </button>
+                        : null }
                     </li>
                 ))}
                 {/* Plus button for adding a new channel */}
+                {Array.isArray(serverDetails.Admin) && serverDetails.Admin.includes(userId) ? 
                 <li>
                     <button onClick={() => setIsAddChannelModalOpen(true)} className="add-channel-button">
                         <Plus /> Add Channel
                     </button>
-                </li>
+                </li> 
+                : null}
+                
             </ul>
 
             {/* User Profile Section */}
             <div className="user-profile-section">
                 <div className="user-info">
                     <img 
-                        // src={userData?.profilePicture || 'https://via.placeholder.com/40'}  // Use placeholder if no image
                         src={userData?.avatar || 'https://via.placeholder.com/40'}  // Use placeholder if no image
                         alt="User Avatar"
                         className="user-avatar"

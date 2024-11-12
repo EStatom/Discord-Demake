@@ -1,0 +1,38 @@
+.user-list {
+    width: 15%; /* Adjust based on your layout */
+    padding: 1rem;
+    background-color: #2f3136; /* Discord-like color */
+    color: #ffffff;
+    border-left: 1px solid #202225;
+    overflow-y: auto;
+    height: 100vh;
+}
+
+.user-list h3 {
+    font-size: 1.2rem;
+    color: #b9bbbe;
+    margin-bottom: 1rem;
+}
+
+.user-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    padding: 0.5rem;
+    border-radius: 0.3rem;
+    background-color: #36393f;
+    transition: background-color 0.2s ease;
+}
+
+.user-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    margin-right: 0.8rem;
+    object-fit: cover;
+}
+
+.username {
+    font-size: 1rem;
+    color: #b9bbbe;
+}
