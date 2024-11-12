@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import EmojiPicker from 'emoji-picker-react';
 import { collection, query, orderBy, onSnapshot, updateDoc, deleteDoc } from 'firebase/firestore';
 import { sendMessageToFirebase, uploadFileToFirebase } from './../../firebaseService';
@@ -7,6 +7,8 @@ import { doc, getDoc } from 'firebase/firestore';
 
 import { Menu, Hash, Search, Smile, Plus, Send } from 'lucide-react';
 import './../styles/ChatApp.css';
+
+import { haversineDistance } from "./../../haversine"
 
 // HighlightedText Component
 const HighlightedText = ({ text, highlight }) => {
@@ -100,7 +102,7 @@ const ChatHeader = ({ name, serverId, type, onSearch }) => {
                   {/*className="bg-transparent text-white border-none outline-none w-full": This removes the background and borders for the input, makes the text white, and ensures the input field takes up the full width (w-full)*/}
 
       <div className="server-info">
-        Server: {serverId}
+        Server Id: {serverId}
       </div>
     </div>
   );
@@ -132,7 +134,7 @@ const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage, us
               className="message-avatar" 
             />
             <span className="message-sender">{message.sender}</span>
-            <span className="message-timestamp">{new Date(message.timestamp).toLocaleTimeString()}</span>
+            <span className="message-timestamp">{new Date(message.timestamp).toLocaleString()}</span>
           </div>
           <div className="message-content">
             <p>
@@ -151,45 +153,6 @@ const ChatMessages = ({ messages, searchTerm, onEditMessage, onDeleteMessage, us
       ))}
     </div>
   );
-};
-
-
-
-
-// Individual Message Component
-const Message = ({ sender, timestamp, content, fileURL, onDelete, onEdit }) => {
-  return (
-    <div className="message">
-      <div className="message">
-        <p className="message-sender">{sender}</p>
-        <p>{content}</p>
-        {fileURL && <a href={fileURL} target="_blank" rel="noopener noreferrer" className="text-blue-400">Download File</a>}
-        <span className="message-timestamp">{timestamp}</span>
-        <div className="flex space-x-2 mt-2">
-          <button onClick={onDelete} className="text-red-500">Delete</button>
-          <button onClick={onEdit} className="text-blue-500">Edit</button>
-        </div>
-      </div>
-    </div>
-  );
-{/*
-  <p className="message-sender">{sender}</p>
-<p>{content}</p>
-Displays the sender’s name and the message content.
-
-If the message has an attached file (fileURL), it shows a link to download the file. This link opens in a new tab.
-###########################################
-  <span className="message-timestamp">{timestamp}</span>
-  Displays the time the message was sent.
-##########################################
-<button onClick={onDelete} className="text-red-500">Delete</button>
-<button onClick={onEdit} className="text-blue-500">Edit</button>
-
-// These buttons allow the user to delete or edit the message using the provided onDelete and onEdit functions, which are passed as props.
-  */}
-
-
-
 };
 
 // Chat Input Component
@@ -214,12 +177,24 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
     }
 
     if (message.trim() !== '' || fileURL) {
-      console.log('Sending message with content:', message);
-      console.log('Sending file URL:', fileURL, selectedServerId, selectedChannelId); 
-      await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username); // to send message and fileURL to Firebase
-      setMessage(''); // to clear message after sending
-    }
-  };
+        // Get user’s geolocation
+        navigator.geolocation.getCurrentPosition(async (position) => {
+          const location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          };
+  
+          await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username, location);
+          setMessage(''); // Clear message after sending
+        }, 
+        async (error) => {
+          console.error("Geolocation error:", error);
+          // Send message without location if geolocation fails
+          await sendMessageToFirebase(message, fileURL, selectedServerId, selectedChannelId, username, null);
+          setMessage(''); 
+        });
+      }
+    };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
@@ -289,24 +264,42 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    if (selectedChannelId) {
-      const q = query(
-        collection(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`), 
-        orderBy('timestamp', 'asc')
-      );
+    const loadMessages = async () => {
+        if (selectedChannelId) {
+            const q = query(
+                collection(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`),
+                orderBy("timestamp", "asc")
+            );
 
-      const unsubscribe = onSnapshot(q, (snapshot) => {
-        const channelMessages = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setMessages(channelMessages);  
-      });
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const allMessages = snapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
 
-      
-      return () => unsubscribe();
-    }
-  }, [serverDetails, selectedChannelId]);
+                if (serverDetails.id === "GeoServer" && userData?.location) {
+                    const nearbyMessages = allMessages.filter((msg) => {
+                        const distance = haversineDistance(
+                            userData.location.latitude,
+                            userData.location.longitude,
+                            msg.latitude,
+                            msg.longitude
+                        );
+                        return distance <= 20; //This is the radius in Km
+                    });
+                    setMessages(nearbyMessages);
+                } else {
+                    setMessages(allMessages);
+                }
+            });
+
+            return () => unsubscribe();
+        }
+    };
+
+    loadMessages();
+  }, [serverDetails, selectedChannelId, userData]);
+
 
   const editMessage = async (messageId, newContent) => {
     const messageDocRef = doc(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`, messageId);
@@ -331,10 +324,11 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
     <div className="chat-app">
       <ChatHeader 
         name={serverDetails ? serverDetails.name : "Invalid Server Name"}
-        serverId={serverDetails ? serverDetails.description : ""}
+        serverId={serverDetails ? serverDetails.id : ""}
         type="channel"
         onSearch={handleSearch}
       />
+      <div className='chat-messages'>
       <ChatMessages 
         messages={messages} 
         searchTerm={searchTerm} 
@@ -342,6 +336,8 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
         onDeleteMessage={deleteMessage}  // Pass the delete handler
         username={userData?.username}
       />
+      </div>
+      
       <div className="chat-input">
         <ChatInput 
           selectedServerId={serverDetails ? serverDetails.id : null} 
