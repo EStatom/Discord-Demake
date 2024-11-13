@@ -262,20 +262,27 @@ const ChatInput = ({ selectedServerId, selectedChannelId, username }) => {
 const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [messages, setMessages] = useState([]);
+  const unsubscribeRef = useRef(null);
 
   useEffect(() => {
     const loadMessages = async () => {
         if (selectedChannelId) {
+          // Clear previous listener if it exists
+          if (unsubscribeRef.current) {
+            console.log(`Unsubscribing from previous channel`);
+            unsubscribeRef.current();
+          }
+
             const q = query(
                 collection(db, `servers/${serverDetails.id}/channels/${selectedChannelId}/messages`),
                 orderBy("timestamp", "asc")
             );
 
-            const unsubscribe = onSnapshot(q, (snapshot) => {
-                const allMessages = snapshot.docs.map((doc) => ({
-                    id: doc.id,
-                    ...doc.data(),
-                }));
+            unsubscribeRef.current = onSnapshot(q, (snapshot) => {
+              const allMessages = snapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              }));
 
                 if (serverDetails.id === "GeoServer" && userData?.location) {
                     const nearbyMessages = allMessages.filter((msg) => {
@@ -292,12 +299,16 @@ const ChatApp = ({ serverDetails, selectedChannelId, userData }) => {
                     setMessages(allMessages);
                 }
             });
-
-            return () => unsubscribe();
         }
     };
 
     loadMessages();
+    return () => {
+      if (unsubscribeRef.current) {
+        console.log(`Unsubscribing from channel: ${selectedChannelId}`);
+        unsubscribeRef.current();
+      }
+    };
   }, [serverDetails, selectedChannelId, userData]);
 
 
